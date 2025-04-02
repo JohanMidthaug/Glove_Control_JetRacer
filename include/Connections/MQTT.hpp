@@ -11,11 +11,12 @@
 
 class MQTT{
 public:
-    MQTT(char *broker, int port);
+    MQTT(char broker, int port);
 
     void init();
 
 private:
+    MqttClient* mqttClient;
     const char broker_;
     const int port_;
 };
