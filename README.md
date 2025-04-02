@@ -27,7 +27,7 @@ git clone git@github.com:HermanGran/Master-of-Machines.git
 ```
 
 ### PlatformIO setup
-For CLION
+To compile and build the project, run the following:
 
  ```bash
 pio init --ide clion
@@ -37,4 +37,10 @@ Then run
 
 ```bash
 pio run
+```
+
+To open the serial monitor, run:
+
+```bash
+pio device monitor 
 ```
