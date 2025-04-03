@@ -3,5 +3,4 @@
 .DS*
 
 # Excluding secret stuff
-/include/Secret/Secrets.hpp
 /src/Secret/Secrets.cpp
