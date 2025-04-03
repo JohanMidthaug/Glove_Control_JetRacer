@@ -6,10 +6,6 @@
 WiFiWPA2::WiFiWPA2() {
     wiFiClient = new WiFiClient;
 
-    EAP_SSID = "eduroam";
-    EAP_IDENTITY = "hermagr@stud.ntnu.no";
-    EAP_USERNAME = "hermagr";
-    EAP_PASSWORD = "";
 }
 
 void WiFiWPA2::init() {
@@ -37,7 +33,6 @@ void WiFiWPA2::init() {
     Serial.printf("Connecting to WPA2 Enterprise-network %s ...\n", EAP_SSID);
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
-        Serial.print(".");
         wl_status_t st = WiFi.status();
         Serial.printf(" WiFi.status() = %d\n", st);
     }
@@ -46,4 +41,8 @@ void WiFiWPA2::init() {
     Serial.printf("My IP-address: ");
     Serial.println(WiFi.localIP());
 
+}
+
+WiFiClient* WiFiWPA2::getWiFiClient() {
+    return wiFiClient;
 }

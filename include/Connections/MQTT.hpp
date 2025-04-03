@@ -11,14 +11,14 @@
 
 class MQTT{
 public:
-    MQTT(char broker, int port);
+    MQTT(WiFiClient* wiFiClient, const char* broker, int port);
 
     void init();
 
 private:
     MqttClient* mqttClient;
-    const char broker_;
-    const int port_;
+    const char* broker_;
+    int port_;
 };
 
 #endif //MOM_GLOVE_MQTT_HPP

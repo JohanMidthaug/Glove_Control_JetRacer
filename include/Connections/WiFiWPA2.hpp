@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp_wpa2.h>
+#include <secret/Secrets.hpp>
 
 class WiFiWPA2{
 public:
@@ -15,12 +16,16 @@ public:
 
     void init();
 
+    WiFiClient* getWiFiClient();
+
 private:
     WiFiClient *wiFiClient;
-    static const char* EAP_SSID;
-    static const char* EAP_IDENTITY;
-    static const char* EAP_USERNAME;
-    static const char* EAP_PASSWORD;
+    /*
+    const char* EAP_SSID;
+    const char* EAP_IDENTITY;
+    const char* EAP_USERNAME;
+    const char* EAP_PASSWORD;
+     */
 };
 
 #endif //MOM_GLOVE_WIFI_HPP
