@@ -2,8 +2,10 @@
 #include <Connections/MQTT.hpp>
 #include <Connections/WiFiWPA2.hpp>
 
+// Creating WIFI class
 WiFiWPA2 wifi;
 
+// Creating MQTT class
 MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
 
 // Creating topics: Topic | Update Interval
