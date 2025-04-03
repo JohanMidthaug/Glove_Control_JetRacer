@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #include <ArduinoMqttClient.h>
 #include <WiFi.h>
+#include "Connections/Topic.hpp"
 
 class MQTT{
 public:
@@ -15,10 +16,15 @@ public:
 
     void init();
 
+    void send(Topic& topic, float value);
+
+    MqttClient* getMqttClient();
+
 private:
     MqttClient* mqttClient;
     const char* broker_;
     int port_;
+    unsigned long lastMillis;
 };
 
 #endif //MOM_GLOVE_MQTT_HPP

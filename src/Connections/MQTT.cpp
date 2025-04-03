@@ -4,7 +4,7 @@
 
 #include "Connections/MQTT.hpp"
 
-MQTT::MQTT(WiFiClient* wiFiClient, const char* broker, int port) : broker_(broker), port_(port) {
+MQTT::MQTT(WiFiClient* wiFiClient, const char* broker, int port) : broker_(broker), port_(port), lastMillis(millis()) {
     mqttClient = new MqttClient(wiFiClient);
 }
 
@@ -22,4 +22,24 @@ void MQTT::init() {
 
     Serial.println("Currently connected to the MQTT broker!");
     Serial.println();
+}
+
+void MQTT::send(Topic& topic, float value) {
+
+    if (millis() - topic.getLastMillis() >= topic.getInterval()) {
+        topic.setLastMillis(millis());
+        // Debug messages:
+        Serial.print("Sending message to: ");
+        Serial.println(topic.getTopic());
+        Serial.println(value);
+
+        // Sending topic and value
+        mqttClient->beginMessage(topic.getTopic());
+        mqttClient->print(value);
+        mqttClient->endMessage();
+    }
+}
+
+MqttClient* MQTT::getMqttClient() {
+    return mqttClient;
 }
