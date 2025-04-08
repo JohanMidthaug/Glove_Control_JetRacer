@@ -24,7 +24,7 @@ void MQTT::init() {
     Serial.println();
 }
 
-void MQTT::send(Topic& topic, float value) {
+void MQTT::send(Topic& topic, double value) {
 
     if (millis() - topic.getLastMillis() >= topic.getInterval()) {
         topic.setLastMillis(millis());

@@ -32,7 +32,7 @@ public:
      * @param topic Topic name
      * @param value Value to send
      */
-    void send(Topic& topic, float value);
+    void send(Topic& topic, double value);
 
     /**
      * Getter function for pointer to mqttclient
