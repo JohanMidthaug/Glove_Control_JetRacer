@@ -26,6 +26,8 @@ public:
      */
     void init();
 
+    void homeInit();
+
     /**
      * Getter function for pointer to wificlient
      * @return pointer to wificlient

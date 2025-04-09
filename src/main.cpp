@@ -9,8 +9,11 @@ WiFiWPA2 wifi;
 // Creating IMU class
 IMU bno_IMU;
 
-// Creating MQTT class
-MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
+// Creating MQTT class connecting to NTNU Broker
+//MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
+
+// For Mosquitto Broker
+MQTT mqtt(wifi.getWiFiClient(), "192.168.68.62", 1883);
 
 // Creating topics: Topic | Update Interval (ms)
 /*
@@ -27,7 +30,8 @@ void setup() {
     Serial.begin(115200);
 
     // Initializing classes
-    wifi.init();
+    // wifi.init();
+    wifi.homeInit();
     mqtt.init();
     bno_IMU.init();
 }
@@ -41,5 +45,5 @@ void loop() {
     mqtt.send(heading, bno_IMU.heading());
     mqtt.send(pitch, bno_IMU.pitch());
     mqtt.send(roll, bno_IMU.roll());
-
+    Serial.println();
 }
