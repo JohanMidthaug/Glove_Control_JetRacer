@@ -26,6 +26,9 @@ public:
      */
     void init();
 
+    /**
+     * Added initialization for home wifi
+     */
     void homeInit();
 
     /**

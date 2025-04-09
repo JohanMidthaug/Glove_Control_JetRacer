@@ -12,4 +12,7 @@ const char* EAP_SSID     = "eduroam";
 const char* EAP_IDENTITY = "Username@stud.ntnu.no";
 const char* EAP_USERNAME = "Username";
 const char* EAP_PASSWORD = "****";  // Replace with the actual password
+
+const char* ssid = "wifi_name";
+const char* password = "wifi_password";
 */

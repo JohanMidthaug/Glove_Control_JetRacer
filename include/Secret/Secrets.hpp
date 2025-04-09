@@ -5,11 +5,13 @@
 #ifndef MOM_GLOVE_SECRETS_HPP
 #define MOM_GLOVE_SECRETS_HPP
 
+// WPA2 Enterprise connection
 extern const char* EAP_SSID;
 extern const char* EAP_IDENTITY;
 extern const char* EAP_USERNAME;
 extern const char* EAP_PASSWORD;
 
+// Private WiFi connection
 extern const char* ssid;
 extern const char* password;
 
