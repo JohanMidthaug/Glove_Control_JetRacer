@@ -10,6 +10,7 @@
 #include "Adafruit_Sensor.h"
 #include "Adafruit_BNO055.h"
 #include "utility/imumaths.h"
+#include <vector>
 
 class IMU{
 public:
@@ -22,6 +23,10 @@ public:
     double pitch();
 
     double roll();
+
+    std::vector<double> position();
+
+    Adafruit_BNO055& getbno();
 
 private:
     Adafruit_BNO055 bno;

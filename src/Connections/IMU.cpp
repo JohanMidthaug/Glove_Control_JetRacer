@@ -35,3 +35,12 @@ double IMU::roll() {
     Serial.print(roll);
     return roll;
 }
+
+std::vector<double> IMU::position() {
+    std::vector<double> position;
+    return position;
+}
+
+Adafruit_BNO055& IMU::getbno() {
+    return bno;
+}

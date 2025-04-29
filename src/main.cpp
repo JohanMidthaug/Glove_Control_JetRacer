@@ -2,6 +2,7 @@
 #include <Connections/MQTT.hpp>
 #include <Connections/WiFiWPA2.hpp>
 #include <Connections/IMU.hpp>
+#include <Connections/FlexSensor.hpp>
 
 // Creating WI-FI class
 WiFiWPA2 wifi;
@@ -10,10 +11,10 @@ WiFiWPA2 wifi;
 IMU bno_IMU;
 
 // Creating MQTT class connecting to NTNU Broker
-//MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
+MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
 
 // For Mosquitto Broker
-MQTT mqtt(wifi.getWiFiClient(), "192.168.68.62", 1883);
+// MQTT mqtt(wifi.getWiFiClient(), "192.168.68.62", 1883);
 
 // Creating topics: Topic | Update Interval (ms)
 /*
@@ -22,18 +23,23 @@ Topic yValue("mom/yValue", 1000);
 Topic zValue("mom/zValue", 1000);
 */
 
+// Defining MQTT Topics
 Topic heading("mom/heading", 100);
 Topic pitch("mom/pitch", 100);
 Topic roll("mom/roll", 100);
+
+// Defining flex sensors
+FlexSensor track(4, 3100);
 
 void setup() {
     Serial.begin(115200);
 
     // Initializing classes
-    // wifi.init();
-    wifi.homeInit();
+    wifi.init();
+    // wifi.homeInit();
     mqtt.init();
     bno_IMU.init();
+    track.init();
 }
 
 void loop() {
@@ -42,8 +48,10 @@ void loop() {
     mqtt.getMqttClient()->poll();
 
     // Sending message: Topic | Value
-    mqtt.send(heading, bno_IMU.heading());
-    mqtt.send(pitch, bno_IMU.pitch());
-    mqtt.send(roll, bno_IMU.roll());
-    Serial.println();
+    if (track.read()) {
+        mqtt.send(heading, bno_IMU.heading());
+        mqtt.send(pitch, bno_IMU.pitch());
+        mqtt.send(roll, bno_IMU.roll());
+        Serial.println();
+    }
 }
