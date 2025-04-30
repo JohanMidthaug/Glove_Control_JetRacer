@@ -17,22 +17,16 @@ void IMU::init() {
 
 double IMU::heading() {
     double heading = bno.getVector(Adafruit_BNO055::VECTOR_EULER).x();
-    Serial.print("Heading: ");
-    Serial.print(heading);
     return heading;
 }
 
 double IMU::pitch() {
     double pitch = bno.getVector(Adafruit_BNO055::VECTOR_EULER).y();
-    Serial.print("Pitch: ");
-    Serial.print(pitch);
     return pitch;
 }
 
 double IMU::roll() {
     double roll = bno.getVector(Adafruit_BNO055::VECTOR_EULER).z();
-    Serial.print("Roll: ");
-    Serial.print(roll);
     return roll;
 }
 

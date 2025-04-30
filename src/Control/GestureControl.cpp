@@ -25,29 +25,22 @@ void GestureControl::init() {}
 void GestureControl::track(FlexSensor& flexSensor) {
     if (flexSensor.read()) {
 
-        if (millis() > lastUpdate + interval) {
+        if (millis() >= lastUpdate + interval) {
             lastUpdate = millis();
             double roll = imu.roll();
             double pitch = imu.pitch();
             double heading = imu.heading();
 
-            if (roll > lastRoll) {
-                xPos += roll/lastRoll + 1; // Må endre
-            } else {
-                xPos -= roll/lastRoll + 1; // Må endre
-            }
+            // 2. Signed deltas from the reference we stored earlier
+            float dRoll    = roll    - lastRoll;
+            float dPitch   = pitch   - lastPitch;
+            float dHeading = angleDiff(heading, lastHeading);
 
-            if (pitch > lastPitch) {
-                yPos += pitch/lastPitch + 1; // Må endre
-            } else {
-                yPos -= pitch/lastPitch + 1; // Må endre
-            }
+            // 3. Update virtual position for each axis
+            driveAxis(dRoll,    xPos);
+            driveAxis(dPitch,   yPos);
+            driveAxis(dHeading, zPos);
 
-            if (heading > lastHeading) {
-                zPos += heading/lastHeading + 1; // Må endre
-            } else {
-                zPos += heading/lastHeading + 1; // Må endre
-            }
         }
 
     } else {
@@ -67,5 +60,29 @@ float GestureControl::getY() {
 
 float GestureControl::getZ() {
     return zPos;
+}
+
+void GestureControl::driveAxis(float deltaDeg, double &pos) {
+    float mag = fabsf(deltaDeg);
+
+    // 1. DEAD-ZONE
+    if (mag < deadZone)
+        return;                          // ignore tiny motions
+
+    // 2. Remove the dead-zone so the curve starts at zero
+    mag -= deadZone;
+
+    // 3. Non-linear response (exponential)
+    float step = gain * powf(mag, exponent);
+
+    // 4. Apply the sign to preserve direction
+    pos += copysignf(step, deltaDeg);
+}
+
+// Keep heading differences inside −180 … +180 so wrap-around at 0/360 behaves.
+float GestureControl::angleDiff(float a, float b)
+{
+    float d = fmodf(a - b + 540.0f, 360.0f) - 180.0f;
+    return d;   // signed shortest-arc difference
 }
 

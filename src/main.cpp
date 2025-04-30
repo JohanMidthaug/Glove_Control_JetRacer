@@ -3,6 +3,7 @@
 #include <Connections/WiFiWPA2.hpp>
 #include <Connections/IMU.hpp>
 #include <Connections/FlexSensor.hpp>
+#include "Control/GestureControl.hpp"
 
 // Creating WI-FI class
 WiFiWPA2 wifi;
@@ -34,13 +35,16 @@ Topic zPos("mom/zPos", 100);
 // Defining flex sensors
 FlexSensor track(4, 3100);
 
+// Gesture Control
+GestureControl gestureControl(bno_IMU);
+
 void setup() {
     Serial.begin(115200);
 
     // Initializing classes
-    wifi.init();
+    // wifi.init();
     // wifi.homeInit();
-    mqtt.init();
+    // mqtt.init();
     bno_IMU.init();
     track.init();
 }
@@ -48,6 +52,7 @@ void setup() {
 void loop() {
     // Call poll() regularly to allow the library to send MQTT keep alive which
     // avoids being disconnected by the broker
+    /*
     mqtt.getMqttClient()->poll();
 
     // Sending message: Topic | Value
@@ -57,4 +62,12 @@ void loop() {
         mqtt.send(roll, bno_IMU.roll());
         Serial.println();
     }
+    */
+    gestureControl.track(track);
+    Serial.print("POSITION: | x: ");
+    Serial.print(gestureControl.getX());
+    Serial.print(" | y: ");
+    Serial.print(gestureControl.getY());
+    Serial.print(" | z: ");
+    Serial.println(gestureControl.getZ());
 }
