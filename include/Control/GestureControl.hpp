@@ -18,20 +18,25 @@ public:
 
     void track(FlexSensor& flexSensor);
 
-    float getx();
-    float gety();
-    float getz();
+    float getX();
+
+    float getY();
+
+    float getZ();
 
 private:
     IMU& imu;
 
     float minX, maxX, minY, maxY, minZ, maxZ;
 
-    float x;
-    float y;
-    float z;
+    double xPos;
+    double yPos;
+    double zPos;
 
     double lastHeading, lastPitch, lastRoll;
+
+    float interval;
+    unsigned long lastUpdate;
 };
 
 

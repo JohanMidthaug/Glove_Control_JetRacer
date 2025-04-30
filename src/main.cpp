@@ -27,6 +27,9 @@ Topic zValue("mom/zValue", 1000);
 Topic heading("mom/heading", 100);
 Topic pitch("mom/pitch", 100);
 Topic roll("mom/roll", 100);
+Topic xPos("mom/xPos", 100);
+Topic yPos("mom/yPos", 100);
+Topic zPos("mom/zPos", 100);
 
 // Defining flex sensors
 FlexSensor track(4, 3100);
