@@ -13,26 +13,44 @@ void IMU::init() {
     }
     // Setting to not use external crystal oscillator
     bno.setExtCrystalUse(false);
+    bno.setMode(OPERATION_MODE_NDOF);
+}
+
+void IMU::run() {
+    // Orientation tracking with quaternions (using delta pos for the total position)
+    static bool first = true;
+    static imu::Quaternion qPrev;
+
+    imu::Quaternion qNow = bno.getQuat();
+
+    if (first) { qPrev = qNow; first = false; return; }
+
+    imu::Quaternion dQ = qPrev.conjugate() * qNow;
+    qPrev = qNow;
+
+    float dRollRad = 2.0f * dQ.x();
+    float dPitchRad = 2.0f * dQ.y();
+    float dHeadingRad = 2.0f * dQ.z();
+
+    float dRollDeg = dRollRad * 57.29578f;
+    float dPitchDeg = dPitchRad * 57.29578f;
+    float dHeadingDeg = dHeadingRad * 57.29578f;
+
+    absRoll += dRollDeg;
+    absHeading += dHeadingDeg;
+    absPitch += dPitchDeg;
 }
 
 double IMU::heading() {
-    double heading = bno.getVector(Adafruit_BNO055::VECTOR_EULER).x();
-    return heading;
+    return absHeading;
 }
 
 double IMU::pitch() {
-    double pitch = bno.getVector(Adafruit_BNO055::VECTOR_EULER).y();
-    return pitch;
+    return absPitch;
 }
 
 double IMU::roll() {
-    double roll = bno.getVector(Adafruit_BNO055::VECTOR_EULER).z();
-    return roll;
-}
-
-std::vector<double> IMU::position() {
-    std::vector<double> position;
-    return position;
+    return absRoll;
 }
 
 Adafruit_BNO055& IMU::getbno() {

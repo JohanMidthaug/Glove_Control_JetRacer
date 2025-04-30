@@ -18,18 +18,22 @@ public:
 
     void init();
 
+    void run();
+
     double heading();
 
     double pitch();
 
     double roll();
 
-    std::vector<double> position();
-
     Adafruit_BNO055& getbno();
 
 private:
     Adafruit_BNO055 bno;
+
+    float absHeading;
+    float absPitch;
+    float absRoll;
 };
 
 #endif //MOM_GLOVE_IMU_HPP

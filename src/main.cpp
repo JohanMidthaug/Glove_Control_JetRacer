@@ -49,6 +49,8 @@ void setup() {
     track.init();
 }
 
+float totRoll = 0.0, totPitch = 0.0, totYaw = 0.0;
+
 void loop() {
     // Call poll() regularly to allow the library to send MQTT keep alive which
     // avoids being disconnected by the broker
@@ -63,11 +65,20 @@ void loop() {
         Serial.println();
     }
     */
+    bno_IMU.run();
     gestureControl.track(track);
-    Serial.print("POSITION: | x: ");
+    Serial.print("ORIENTATION: | Heading: ");
+    Serial.print(bno_IMU.heading());
+    Serial.print(" | Pitch: ");
+    Serial.print(bno_IMU.pitch());
+    Serial.print(" | Roll: ");
+    Serial.print(bno_IMU.roll());
+    Serial.print(" | POSITION: | x: ");
     Serial.print(gestureControl.getX());
     Serial.print(" | y: ");
     Serial.print(gestureControl.getY());
     Serial.print(" | z: ");
     Serial.println(gestureControl.getZ());
+
+
 }
