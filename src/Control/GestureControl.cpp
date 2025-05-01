@@ -11,14 +11,7 @@ minZ(-850),
 maxX(850),
 maxY(850),
 maxZ(850),
-xPos(100),
-yPos(100),
-zPos(100),
-lastHeading(0),
-lastPitch(0),
-lastRoll(0),
-interval(100),
-lastUpdate(0) {}
+interval(100) {}
 
 void GestureControl::init() {}
 
@@ -27,19 +20,18 @@ void GestureControl::track(FlexSensor& flexSensor) {
 
         if (millis() >= lastUpdate + interval) {
             lastUpdate = millis();
-            double roll = imu.roll();
-            double pitch = imu.pitch();
-            double heading = imu.heading();
+            float roll = imu.roll();
+            float pitch = imu.pitch();
+            float heading = imu.heading();
 
-            // 2. Signed deltas from the reference we stored earlier
+            // Signed deltas from the reference we stored earlier
             float dRoll    = roll    - lastRoll;
             float dPitch   = pitch   - lastPitch;
             float dHeading = angleDiff(heading, lastHeading);
 
             // 3. Update virtual position for each axis
-            driveAxis(dRoll,    xPos);
+            driveAxis(dHeading,    xPos);
             driveAxis(dPitch,   yPos);
-            driveAxis(dHeading, zPos);
 
         }
 
@@ -50,19 +42,19 @@ void GestureControl::track(FlexSensor& flexSensor) {
     }
 }
 
-float GestureControl::getX() {
+float GestureControl::getX() const {
     return xPos;
 }
 
-float GestureControl::getY() {
+float GestureControl::getY() const {
     return yPos;
 }
 
-float GestureControl::getZ() {
+float GestureControl::getZ() const {
     return zPos;
 }
 
-void GestureControl::driveAxis(float deltaDeg, double &pos) {
+void GestureControl::driveAxis(float deltaDeg, float &pos) {
     float mag = fabsf(deltaDeg);
 
     // 1. DEAD-ZONE

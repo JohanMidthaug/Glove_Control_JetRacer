@@ -14,16 +14,6 @@ IMU bno_IMU;
 // Creating MQTT class connecting to NTNU Broker
 MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
 
-// For Mosquitto Broker
-// MQTT mqtt(wifi.getWiFiClient(), "192.168.68.62", 1883);
-
-// Creating topics: Topic | Update Interval (ms)
-/*
-Topic xValue("mom/xValue", 1000);
-Topic yValue("mom/yValue", 1000);
-Topic zValue("mom/zValue", 1000);
-*/
-
 // Defining MQTT Topics
 Topic heading("mom/heading", 100);
 Topic pitch("mom/pitch", 100);
@@ -43,13 +33,10 @@ void setup() {
 
     // Initializing classes
     // wifi.init();
-    // wifi.homeInit();
     // mqtt.init();
     bno_IMU.init();
     track.init();
 }
-
-float totRoll = 0.0, totPitch = 0.0, totYaw = 0.0;
 
 void loop() {
     // Call poll() regularly to allow the library to send MQTT keep alive which
@@ -79,6 +66,5 @@ void loop() {
     Serial.print(gestureControl.getY());
     Serial.print(" | z: ");
     Serial.println(gestureControl.getZ());
-
 
 }

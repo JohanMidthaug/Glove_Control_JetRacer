@@ -20,11 +20,11 @@ public:
 
     void run();
 
-    double heading();
+    float heading();
 
-    double pitch();
+    float pitch();
 
-    double roll();
+    float roll();
 
     Adafruit_BNO055& getbno();
 

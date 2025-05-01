@@ -18,33 +18,31 @@ public:
 
     void track(FlexSensor& flexSensor);
 
-    float getX();
+    float getX() const;
 
-    float getY();
+    float getY() const;
 
-    float getZ();
+    float getZ() const;
 
 private:
     IMU& imu;
 
     float minX, maxX, minY, maxY, minZ, maxZ;
 
-    double xPos;
-    double yPos;
-    double zPos;
+    float xPos = 100, yPos = 100, zPos = 100;
 
-    double lastHeading, lastPitch, lastRoll;
+    float lastHeading = 0, lastPitch = 0, lastRoll = 0;
 
     float interval;
-    unsigned long lastUpdate;
+    unsigned long lastUpdate = 0;
 
     // Updated variables (help from GPT
-    static constexpr float deadZone = 3.0f;
+    static constexpr float deadZone = 5.0f;
     static constexpr float gain = 0.001f; // How far one 'unit' moves the object, think this will be 1
     static constexpr float exponent = 2.2f;
 
     // Function for movement
-    void driveAxis(float deltaDeg, double& pos);
+    void driveAxis(float deltaDeg, float& pos);
     float angleDiff(float a, float b);
 };
 

@@ -30,7 +30,7 @@ void IMU::run() {
 
     float dRollRad = 2.0f * dQ.x();
     float dPitchRad = 2.0f * dQ.y();
-    float dHeadingRad = 2.0f * dQ.z();
+    float dHeadingRad = -2.0f * dQ.z();
 
     float dRollDeg = dRollRad * 57.29578f;
     float dPitchDeg = dPitchRad * 57.29578f;
@@ -41,15 +41,15 @@ void IMU::run() {
     absPitch += dPitchDeg;
 }
 
-double IMU::heading() {
+float IMU::heading() {
     return absHeading;
 }
 
-double IMU::pitch() {
+float IMU::pitch() {
     return absPitch;
 }
 
-double IMU::roll() {
+float IMU::roll() {
     return absRoll;
 }
 
