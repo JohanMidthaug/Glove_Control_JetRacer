@@ -4,7 +4,7 @@
 
 #include "Connections/Topic.hpp"
 
-Topic::Topic(const char *topic, float interval) : topic(topic), interval(interval), lastMillis(millis()) {}
+Topic::Topic(const char *topic, float interval) : topic(topic), interval(interval), lastMillis(millis()), lastValue(0) {}
 
 float Topic::getInterval() {
     return interval;
@@ -20,4 +20,12 @@ unsigned long Topic::getLastMillis() {
 
 const char* Topic::getTopic() {
     return topic;
+}
+
+void Topic::updateLastValue(double value) {
+    lastValue = value;
+}
+
+bool Topic::update(double value) {
+    if (lastValue != value) {return true;} else {return false;}
 }

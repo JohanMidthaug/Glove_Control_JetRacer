@@ -26,12 +26,13 @@ void MQTT::init() {
 
 void MQTT::send(Topic& topic, double value) {
 
-    if (millis() - topic.getLastMillis() >= topic.getInterval()) {
+    if ((millis() - topic.getLastMillis() >= topic.getInterval()) && topic.update(value)) {
         topic.setLastMillis(millis());
         // Debug messages:
         Serial.print("Sending message to: ");
         Serial.println(topic.getTopic());
         Serial.println(value);
+        topic.updateLastValue(value);
 
         // Sending topic and value
         mqttClient->beginMessage(topic.getTopic());

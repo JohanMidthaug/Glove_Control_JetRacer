@@ -29,7 +29,7 @@ private:
 
     float minX, maxX, minY, maxY, minZ, maxZ;
 
-    float xPos = 100, yPos = 100, zPos = 100;
+    float xPos = 300, yPos = 50, zPos = 500;
 
     float lastHeading = 0, lastPitch = 0, lastRoll = 0;
 

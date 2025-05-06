@@ -5,6 +5,8 @@
 #include <Connections/FlexSensor.hpp>
 #include "Control/GestureControl.hpp"
 
+int buttonPin = 10;
+
 // Creating WI-FI class
 WiFiWPA2 wifi;
 
@@ -15,12 +17,12 @@ IMU bno_IMU;
 MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
 
 // Defining MQTT Topics
-Topic heading("mom/heading", 100);
-Topic pitch("mom/pitch", 100);
-Topic roll("mom/roll", 100);
-Topic xPos("mom/xPos", 100);
-Topic yPos("mom/yPos", 100);
-Topic zPos("mom/zPos", 100);
+Topic rxValue("mom/rxValue", 100);
+Topic ryValue("mom/ryValue", 100);
+Topic rzValue("mom/rzValue", 100);
+Topic xValue("mom/xValue", 100);
+Topic yValue("mom/yValue", 100);
+Topic zValue("mom/zValue", 100);
 
 // Defining flex sensors
 FlexSensor track(4, 3100);
@@ -31,9 +33,11 @@ GestureControl gestureControl(bno_IMU);
 void setup() {
     Serial.begin(115200);
 
+    pinMode(buttonPin, INPUT_PULLUP);
+
     // Initializing classes
-    // wifi.init();
-    // mqtt.init();
+    wifi.init();
+    mqtt.init();
     bno_IMU.init();
     track.init();
 }
@@ -41,30 +45,25 @@ void setup() {
 void loop() {
     // Call poll() regularly to allow the library to send MQTT keep alive which
     // avoids being disconnected by the broker
-    /*
     mqtt.getMqttClient()->poll();
 
-    // Sending message: Topic | Value
-    if (track.read()) {
-        mqtt.send(heading, bno_IMU.heading());
-        mqtt.send(pitch, bno_IMU.pitch());
-        mqtt.send(roll, bno_IMU.roll());
-        Serial.println();
-    }
-    */
     bno_IMU.run();
     gestureControl.track(track);
-    Serial.print("ORIENTATION: | Heading: ");
-    Serial.print(bno_IMU.heading());
-    Serial.print(" | Pitch: ");
-    Serial.print(bno_IMU.pitch());
-    Serial.print(" | Roll: ");
+    // Position values
+    mqtt.send(xValue, gestureControl.getX());
+    mqtt.send(yValue, gestureControl.getY());
+    mqtt.send(zValue, gestureControl.getZ());
+    Serial.print("ORIENTATION | rx: ");
     Serial.print(bno_IMU.roll());
-    Serial.print(" | POSITION: | x: ");
-    Serial.print(gestureControl.getX());
-    Serial.print(" | y: ");
-    Serial.print(gestureControl.getY());
-    Serial.print(" | z: ");
-    Serial.println(gestureControl.getZ());
+    Serial.print(" ry: ");
+    Serial.print(bno_IMU.pitch());
+    Serial.print(" rz: ");
+    Serial.println(bno_IMU.heading());
 
+    // Orientation values
+    if (digitalRead(buttonPin) == LOW) {
+        mqtt.send(rxValue, bno_IMU.roll());
+        mqtt.send(ryValue, bno_IMU.pitch());
+        mqtt.send(rzValue, bno_IMU.heading());
+    }
 }

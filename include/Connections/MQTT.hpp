@@ -45,6 +45,7 @@ private:
     const char* broker_;
     int port_;
     unsigned long lastMillis;
+    double lastValue;
 };
 
 #endif //MOM_GLOVE_MQTT_HPP

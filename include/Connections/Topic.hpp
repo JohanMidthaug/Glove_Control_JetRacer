@@ -43,10 +43,14 @@ public:
      */
     float getInterval();
 
+    void updateLastValue(double value);
+    bool update(double value);
+
 private:
     unsigned long lastMillis;
     float interval;
     const char* topic;
+    double lastValue;
 };
 
 #endif //MOM_GLOVE_TOPIC_HPP

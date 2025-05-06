@@ -42,15 +42,15 @@ void IMU::run() {
 }
 
 float IMU::heading() {
-    return absHeading;
+    return bno.getQuat().z() * 2.0f * 57.29578f;
 }
 
 float IMU::pitch() {
-    return absPitch;
+    return bno.getQuat().y() * 2.0f * 57.29578f;
 }
 
 float IMU::roll() {
-    return absRoll;
+    return bno.getQuat().x() * 2.0f * 57.29578f;;
 }
 
 Adafruit_BNO055& IMU::getbno() {
