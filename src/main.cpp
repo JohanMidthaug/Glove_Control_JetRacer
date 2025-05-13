@@ -25,7 +25,7 @@ Topic yValue("mom/yValue", 100);
 Topic zValue("mom/zValue", 100);
 
 // Defining flex sensors
-FlexSensor track(4, 3100);
+FlexSensor track(4, 3200);
 
 // Gesture Control
 GestureControl gestureControl(bno_IMU);
@@ -47,21 +47,17 @@ void loop() {
     // avoids being disconnected by the broker
     mqtt.getMqttClient()->poll();
 
-    bno_IMU.run();
+    bool read;
+    if (digitalRead(buttonPin) == LOW) {read = true;} else {read = false;}
+    bno_IMU.run(read);
     gestureControl.track(track);
     // Position values
     mqtt.send(xValue, gestureControl.getX());
     mqtt.send(yValue, gestureControl.getY());
     mqtt.send(zValue, gestureControl.getZ());
-    Serial.print("ORIENTATION | rx: ");
-    Serial.print(bno_IMU.roll());
-    Serial.print(" ry: ");
-    Serial.print(bno_IMU.pitch());
-    Serial.print(" rz: ");
-    Serial.println(bno_IMU.heading());
 
     // Orientation values
-    if (digitalRead(buttonPin) == LOW) {
+    if (read) {
         mqtt.send(rxValue, bno_IMU.roll());
         mqtt.send(ryValue, bno_IMU.pitch());
         mqtt.send(rzValue, bno_IMU.heading());

@@ -16,41 +16,88 @@ void IMU::init() {
     bno.setMode(OPERATION_MODE_NDOF);
 }
 
-void IMU::run() {
-    // Orientation tracking with quaternions (using delta pos for the total position)
+#include <cmath>
+
+void quaternionToEulerRad(const imu::Quaternion& q, float& roll, float& pitch, float& yaw) {
+    // Assuming quaternion is normalized and in (w, x, y, z)
+    float w = q.w();
+    float x = q.x();
+    float y = q.y();
+    float z = q.z();
+
+    // Roll (X-axis rotation)
+    float sinr_cosp = 2.0f * (w * x + y * z);
+    float cosr_cosp = 1.0f - 2.0f * (x * x + y * y);
+    roll = std::atan2(sinr_cosp, cosr_cosp);
+
+    // Pitch (Y-axis rotation)
+    float sinp = 2.0f * (w * y - z * x);
+    if (std::abs(sinp) >= 1.0f)
+        pitch = std::copysign(M_PI / 2.0f, sinp); // Use 90 degrees if out of range
+    else
+        pitch = std::asin(sinp);
+
+    // Yaw (Z-axis rotation)
+    float siny_cosp = 2.0f * (w * z + x * y);
+    float cosy_cosp = 1.0f - 2.0f * (y * y + z * z);
+    yaw = std::atan2(siny_cosp, cosy_cosp);
+}
+
+void IMU::run(bool read) {
     static bool first = true;
+
     static imu::Quaternion qPrev;
+
+    if (first) { first = false; return; }
 
     imu::Quaternion qNow = bno.getQuat();
 
-    if (first) { qPrev = qNow; first = false; return; }
+    float roll, pitch, yaw;
+    quaternionToEulerRad(qNow, roll, pitch, yaw);
 
+    absRoll = roll;
+    absPitch = pitch;
+    absHeading = yaw;
+
+    // Hotfix for tracking issue
     imu::Quaternion dQ = qPrev.conjugate() * qNow;
     qPrev = qNow;
 
     float dRollRad = 2.0f * dQ.x();
     float dPitchRad = 2.0f * dQ.y();
-    float dHeadingRad = -2.0f * dQ.z();
+    float dHeadingRad = 2.0f * dQ.z();
 
     float dRollDeg = dRollRad * 57.29578f;
     float dPitchDeg = dPitchRad * 57.29578f;
     float dHeadingDeg = dHeadingRad * 57.29578f;
 
-    absRoll += dRollDeg;
-    absHeading += dHeadingDeg;
-    absPitch += dPitchDeg;
+    gestureRoll += dRollDeg;
+    gesturePitch += dPitchDeg;
+    gestureHeading += dHeadingDeg;
 }
 
 float IMU::heading() {
-    return bno.getQuat().z() * 2.0f * 57.29578f;
+    return absHeading;
 }
 
 float IMU::pitch() {
-    return bno.getQuat().y() * 2.0f * 57.29578f;
+    return absPitch;
 }
 
 float IMU::roll() {
-    return bno.getQuat().x() * 2.0f * 57.29578f;;
+    return absRoll;
+}
+
+float IMU::getGestureHeading() {
+    return gestureHeading;
+}
+
+float IMU::getGesturePitch() {
+    return gesturePitch;
+}
+
+float IMU::getGestureRoll() {
+    return gestureRoll;
 }
 
 Adafruit_BNO055& IMU::getbno() {

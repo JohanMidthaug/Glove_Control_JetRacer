@@ -2,6 +2,7 @@
 // Created by Herman Hårstad Gran on 29/04/2025.
 //
 #include "Control/GestureControl.hpp"
+#include <cmath>
 
 GestureControl::GestureControl(IMU& imu_):
 imu(imu_),
@@ -18,27 +19,40 @@ void GestureControl::init() {}
 void GestureControl::track(FlexSensor& flexSensor) {
     if (flexSensor.read()) {
 
-        if (millis() >= lastUpdate + interval) {
-            lastUpdate = millis();
-            float roll = imu.roll();
-            float pitch = imu.pitch();
-            float heading = imu.heading();
+        float roll = imu.getGestureRoll();
+        float pitch = imu.getGesturePitch();
+        float heading = imu.getGestureHeading();
 
-            // Signed deltas from the reference we stored earlier
-            float dRoll    = roll    - lastRoll;
-            float dPitch   = pitch   - lastPitch;
-            float dHeading = angleDiff(heading, lastHeading);
+        // Signed deltas from the reference we stored earlier
+        float dRoll    = roll    - lastRoll;
+        float dPitch   = pitch   - lastPitch;
+        float dHeading = angleDiff(heading, lastHeading);
 
-            // 3. Update virtual position for each axis
-            driveAxis(dHeading,    xPos);
-            driveAxis(dPitch,   yPos);
+        /*
+        Serial.print("Delta | roll: ");
+        Serial.print(dRoll);
+        Serial.print(" pitch: ");
+        Serial.print(dPitch);
+        Serial.print(" heading: ");
+        Serial.println(dHeading);
+        */
 
-        }
+        // 3. Update virtual position for each axis
+        driveAxis(dHeading,    xPos);
+        driveAxis(dPitch,   yPos);
 
     } else {
-        lastHeading = imu.heading();
-        lastPitch = imu.pitch();
-        lastRoll = imu.roll();
+        lastHeading = imu.getGestureHeading();
+        lastPitch = imu.getGesturePitch();
+        lastRoll = imu.getGestureRoll();
+        /*
+        Serial.print("Delta | roll: ");
+        Serial.print(lastRoll);
+        Serial.print(" pitch: ");
+        Serial.print(lastPitch);
+        Serial.print(" heading: ");
+        Serial.println(lastHeading);
+         */
     }
 }
 

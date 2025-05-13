@@ -18,13 +18,17 @@ public:
 
     void init();
 
-    void run();
+    void run(bool read);
 
     float heading();
 
     float pitch();
 
     float roll();
+
+    float getGestureHeading();
+    float getGesturePitch();
+    float getGestureRoll();
 
     Adafruit_BNO055& getbno();
 
@@ -34,6 +38,10 @@ private:
     float absHeading;
     float absPitch;
     float absRoll;
+
+    float gestureHeading;
+    float gesturePitch;
+    float gestureRoll;
 };
 
 #endif //MOM_GLOVE_IMU_HPP

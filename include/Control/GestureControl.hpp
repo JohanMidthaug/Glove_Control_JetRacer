@@ -37,9 +37,9 @@ private:
     unsigned long lastUpdate = 0;
 
     // Updated variables (help from GPT
-    static constexpr float deadZone = 5.0f;
+    static constexpr float deadZone = 10.0f;
     static constexpr float gain = 0.001f; // How far one 'unit' moves the object, think this will be 1
-    static constexpr float exponent = 2.2f;
+    static constexpr float exponent = 1.5f;
 
     // Function for movement
     void driveAxis(float deltaDeg, float& pos);
