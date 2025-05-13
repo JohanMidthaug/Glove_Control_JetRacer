@@ -18,7 +18,7 @@ public:
 
     void init();
 
-    void run(bool read);
+    void run();
 
     float heading();
 

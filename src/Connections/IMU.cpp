@@ -43,7 +43,7 @@ void quaternionToEulerRad(const imu::Quaternion& q, float& roll, float& pitch, f
     yaw = std::atan2(siny_cosp, cosy_cosp);
 }
 
-void IMU::run(bool read) {
+void IMU::run() {
     static bool first = true;
 
     static imu::Quaternion qPrev;

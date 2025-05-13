@@ -13,13 +13,15 @@ public:
 
     void init();
 
-    float sensorRead();
-
-    bool buttonRead();
+    bool buttonToggle();
 
 private:
     int pin;
-
+    double debounce = 500;
+    unsigned long lastPressed;
+    bool toggled = false;
+    bool risingEdgeBool;
+    bool risingEdgeBool0;
 };
 
 #endif //MOM_GLOVE_USERBUTTON_HPP

@@ -4,8 +4,7 @@
 #include <Connections/IMU.hpp>
 #include <Connections/FlexSensor.hpp>
 #include "Control/GestureControl.hpp"
-
-int buttonPin = 10;
+#include "Connections/UserButton.hpp"
 
 // Creating WI-FI class
 WiFiWPA2 wifi;
@@ -26,6 +25,7 @@ Topic zValue("mom/zValue", 100);
 
 // Defining flex sensors
 FlexSensor track(4, 3200);
+UserButton button(10);
 
 // Gesture Control
 GestureControl gestureControl(bno_IMU);
@@ -33,7 +33,7 @@ GestureControl gestureControl(bno_IMU);
 void setup() {
     Serial.begin(115200);
 
-    pinMode(buttonPin, INPUT_PULLUP);
+    button.init();
 
     // Initializing classes
     wifi.init();
@@ -48,9 +48,14 @@ void loop() {
     mqtt.getMqttClient()->poll();
 
     bool read;
-    if (digitalRead(buttonPin) == LOW) {read = true;} else {read = false;}
-    bno_IMU.run(read);
-    gestureControl.track(track);
+
+    Serial.println(button.buttonToggle());
+
+    if (button.buttonToggle()) {
+        bno_IMU.run();
+        gestureControl.track(track);
+    }
+
     // Position values
     mqtt.send(xValue, gestureControl.getX());
     mqtt.send(yValue, gestureControl.getY());
