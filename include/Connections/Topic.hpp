@@ -43,7 +43,17 @@ public:
      */
     float getInterval();
 
+    /**
+     * Used for updating last value sent
+     * @param value last value sent
+     */
     void updateLastValue(double value);
+
+    /**
+     * Used for checking of the last value sent is the same, in that case, not sending value to broker
+     * @param value value to send
+     * @return returning boolean if last value is different, returns true
+     */
     bool update(double value);
 
 private:

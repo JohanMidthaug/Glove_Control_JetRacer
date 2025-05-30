@@ -3,11 +3,12 @@
 //
 #include "Connections/WiFiWPA2.hpp"
 
+// Constructor, creating an instance of WiFiClient from the package
 WiFiWPA2::WiFiWPA2() {
     wiFiClient = new WiFiClient;
-
 }
 
+// Init function, used in setup for NTNU broker, a wpa2
 void WiFiWPA2::init() {
     // Removing old connections
     WiFi.disconnect(true);
@@ -40,9 +41,9 @@ void WiFiWPA2::init() {
     Serial.println("Connected!");
     Serial.printf("My IP-address: ");
     Serial.println(WiFi.localIP());
-
 }
 
+// Another init function for local mosquitto broker
 void WiFiWPA2::homeInit() {
     WiFi.disconnect(true);
 
@@ -61,6 +62,7 @@ void WiFiWPA2::homeInit() {
 
 }
 
+// Getter function for WiFiClient
 WiFiClient* WiFiWPA2::getWiFiClient() {
     return wiFiClient;
 }

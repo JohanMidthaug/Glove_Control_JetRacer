@@ -1,0 +1,12 @@
+@startuml
+
+class Animal {
+  +string name
+  +void speak()
+}
+
+class Dog extends Animal {
+  +void bark()
+}
+
+@enduml

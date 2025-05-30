@@ -20,6 +20,9 @@ public:
      */
     FlexSensor(int inputPin_, int threshold_);
 
+    /**
+     * Initializing the flex sensor, used in setup
+     */
     void init();
 
     /**

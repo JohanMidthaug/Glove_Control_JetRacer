@@ -11,25 +11,68 @@
 #include "Adafruit_BNO055.h"
 #include "utility/imumaths.h"
 #include <vector>
+#include <cmath>
 
+/**
+ * Class for initializing the BNO055 IMU sensor, also retrieving sensor data
+ */
 class IMU{
 public:
+    /**
+     * Constructor for the class, creating an instance of the bno sensor using the Adafruit package
+     */
     IMU();
 
+    /**
+     * Function for initializing the class, used in setup
+     */
     void init();
 
+    /**
+     * Function for running sensor, calculating quaternions
+     */
     void run();
 
+    /**
+     * Getter function for heading
+     * @return
+     */
     float heading();
 
+    /**
+     * Getter function for Pitch
+     * @return
+     */
     float pitch();
 
+    /**
+     * Getter function for Roll
+     * @return
+     */
     float roll();
 
+    /**
+     * Getter function for specific heading used in gesture control class
+     * @return
+     */
     float getGestureHeading();
+
+    /**
+     * Getter function for specific pitch used in gesture control class
+     * @return
+     */
     float getGesturePitch();
+
+    /**
+     * Getter function for specific roll used in gesture control class
+     * @return
+     */
     float getGestureRoll();
 
+    /**
+     * Getter function for bno instance from the adafruit package
+     * @return
+     */
     Adafruit_BNO055& getbno();
 
 private:

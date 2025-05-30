@@ -4,6 +4,7 @@
 #include "Control/GestureControl.hpp"
 #include <cmath>
 
+// Constructor
 GestureControl::GestureControl(IMU& imu_):
 imu(imu_),
 minX(-850),
@@ -14,8 +15,10 @@ maxY(850),
 maxZ(850),
 interval(100) {}
 
+// Init function, used in setup
 void GestureControl::init() {}
 
+// Virtual joystick function
 void GestureControl::virtualJoystick(FlexSensor& flexSensor) {
     if (flexSensor.read()) {
 

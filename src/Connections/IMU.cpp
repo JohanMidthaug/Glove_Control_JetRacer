@@ -2,11 +2,12 @@
 // Created by Herman Hårstad Gran on 08/04/2025.
 //
 #include "Connections/IMU.hpp"
-
+// Constructor
 IMU::IMU() {
     bno = Adafruit_BNO055(55, 0x28);
 }
 
+// Init function
 void IMU::init() {
     if (!bno.begin()) {
         Serial.println("BNO055 not detected ... Check wiring or I2C address");
@@ -16,8 +17,7 @@ void IMU::init() {
     bno.setMode(OPERATION_MODE_NDOF);
 }
 
-#include <cmath>
-
+// Math function for converting quaternions to euler angles, some help from GPT to create this
 void quaternionToEulerRad(const imu::Quaternion& q, float& roll, float& pitch, float& yaw) {
     // Assuming quaternion is normalized and in (w, x, y, z)
     float w = q.w();
@@ -43,6 +43,7 @@ void quaternionToEulerRad(const imu::Quaternion& q, float& roll, float& pitch, f
     yaw = std::atan2(siny_cosp, cosy_cosp);
 }
 
+// Function for sensor data retrieval
 void IMU::run() {
     static bool first = true;
 
@@ -76,30 +77,37 @@ void IMU::run() {
     gestureHeading += dHeadingDeg;
 }
 
+// Getter function
 float IMU::heading() {
     return absHeading;
 }
 
+// Getter function
 float IMU::pitch() {
     return absPitch;
 }
 
+// Getter function
 float IMU::roll() {
     return absRoll;
 }
 
+// Getter function
 float IMU::getGestureHeading() {
     return gestureHeading;
 }
 
+// Getter function
 float IMU::getGesturePitch() {
     return gesturePitch;
 }
 
+// Getter function
 float IMU::getGestureRoll() {
     return gestureRoll;
 }
 
+// Getter function
 Adafruit_BNO055& IMU::getbno() {
     return bno;
 }
