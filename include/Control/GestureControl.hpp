@@ -16,7 +16,9 @@ public:
 
     void init();
 
-    void track(FlexSensor& flexSensor);
+    void virtualJoystick(FlexSensor& flexSensor);
+
+    void orientation(FlexSensor& flexSensor);
 
     float getX() const;
 
@@ -24,12 +26,19 @@ public:
 
     float getZ() const;
 
+    float getRX() const;
+
+    float getRY() const;
+
+    float getRZ() const;
+
 private:
     IMU& imu;
 
     float minX, maxX, minY, maxY, minZ, maxZ;
 
-    float xPos = 300, yPos = 50, zPos = 500;
+    float xPos = 300, yPos = 50, zPos = 100;
+    float rX = 3.14, rY = 0, rZ = 1.83;
 
     float lastHeading = 0, lastPitch = 0, lastRoll = 0;
 

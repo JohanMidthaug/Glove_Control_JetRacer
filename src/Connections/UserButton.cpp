@@ -8,22 +8,17 @@ UserButton::UserButton(int pin_) : pin(pin_) {}
 
 void UserButton::init() {
     pinMode(pin, INPUT_PULLUP);
-    pinMode(LED_GREEN, OUTPUT);
 }
 
+bool UserButton::toggle() {
 
-bool UserButton::buttonToggle() {
-
-    bool read = !digitalRead(pin);
-
-    if ((read and not toggled) && (millis() >= lastPressed + debounce )) {
+    bool buttonRead = !digitalRead(pin);
+    if ((buttonRead and not toggled) && (millis() >= lastPressed + debounce )) {
         lastPressed = millis();
         toggled = true;
-        digitalWrite(LED_GREEN, HIGH);
-    } else if ((read and toggled) && (millis() >= lastPressed + debounce)) {
+    } else if ((buttonRead and toggled) && (millis() >= lastPressed + debounce)) {
         lastPressed = millis();
         toggled = false;
-        digitalWrite(LED_GREEN, LOW);
     }
 
     return toggled;

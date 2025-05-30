@@ -24,8 +24,8 @@ Topic yValue("mom/yValue", 100);
 Topic zValue("mom/zValue", 100);
 
 // Defining flex sensors
-FlexSensor track(4, 3200);
-UserButton button(10);
+FlexSensor toggleTrack(4, 3350);
+FlexSensor toggleOrientation(5, 3350);
 
 // Gesture Control
 GestureControl gestureControl(bno_IMU);
@@ -33,13 +33,20 @@ GestureControl gestureControl(bno_IMU);
 void setup() {
     Serial.begin(115200);
 
-    button.init();
-
     // Initializing classes
     wifi.init();
     mqtt.init();
+    Serial.print("Initializing sensor ...");
     bno_IMU.init();
-    track.init();
+    Serial.println(" finished!");
+
+    // Init flexsensors
+    toggleTrack.init();
+    toggleOrientation.init();
+
+    // LED initialization
+    pinMode(LED_GREEN, OUTPUT);
+    pinMode(LED_RED, OUTPUT);
 }
 
 void loop() {
@@ -47,14 +54,9 @@ void loop() {
     // avoids being disconnected by the broker
     mqtt.getMqttClient()->poll();
 
-    bool read;
-
-    Serial.println(button.buttonToggle());
-
-    if (button.buttonToggle()) {
-        bno_IMU.run();
-        gestureControl.track(track);
-    }
+    bno_IMU.run();
+    gestureControl.virtualJoystick(toggleTrack);
+    gestureControl.orientation(toggleOrientation);
 
     // Position values
     mqtt.send(xValue, gestureControl.getX());
@@ -62,9 +64,8 @@ void loop() {
     mqtt.send(zValue, gestureControl.getZ());
 
     // Orientation values
-    if (read) {
-        mqtt.send(rxValue, bno_IMU.roll());
-        mqtt.send(ryValue, bno_IMU.pitch());
-        mqtt.send(rzValue, bno_IMU.heading());
-    }
+    mqtt.send(rxValue, gestureControl.getRX());
+    mqtt.send(ryValue, gestureControl.getRY());
+    mqtt.send(rzValue, gestureControl.getRZ());
+
 }

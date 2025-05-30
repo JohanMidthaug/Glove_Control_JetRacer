@@ -16,7 +16,7 @@ interval(100) {}
 
 void GestureControl::init() {}
 
-void GestureControl::track(FlexSensor& flexSensor) {
+void GestureControl::virtualJoystick(FlexSensor& flexSensor) {
     if (flexSensor.read()) {
 
         float roll = imu.getGestureRoll();
@@ -56,6 +56,20 @@ void GestureControl::track(FlexSensor& flexSensor) {
     }
 }
 
+void GestureControl::orientation(FlexSensor &flexSensor) {
+    if (flexSensor.read()) {
+        rX = imu.roll();
+        rY = imu.pitch();
+        rZ = imu.heading();
+    }
+    Serial.print("Orientation | rX: ");
+    Serial.print(imu.roll());
+    Serial.print(" rY: ");
+    Serial.print(imu.pitch());
+    Serial.print(" rZ: ");
+    Serial.println(imu.heading());
+}
+
 float GestureControl::getX() const {
     return xPos;
 }
@@ -66,6 +80,18 @@ float GestureControl::getY() const {
 
 float GestureControl::getZ() const {
     return zPos;
+}
+
+float GestureControl::getRX() const {
+    return rX;
+}
+
+float GestureControl::getRY() const {
+    return rY;
+}
+
+float GestureControl::getRZ() const {
+    return rZ;
 }
 
 void GestureControl::driveAxis(float deltaDeg, float &pos) {

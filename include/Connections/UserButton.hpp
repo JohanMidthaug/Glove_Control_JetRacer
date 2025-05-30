@@ -13,12 +13,12 @@ public:
 
     void init();
 
-    bool buttonToggle();
+    bool toggle();
 
 private:
     int pin;
     double debounce = 500;
-    unsigned long lastPressed;
+    unsigned long lastPressed = 0;
     bool toggled = false;
     bool risingEdgeBool;
     bool risingEdgeBool0;
