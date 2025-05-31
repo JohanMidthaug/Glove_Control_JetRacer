@@ -4,3 +4,5 @@
 
 # Excluding secret stuff
 /src/Secret/Secrets.cpp
+/latex
+/html

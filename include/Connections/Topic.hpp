@@ -7,6 +7,24 @@
 
 #include <Arduino.h>
 
+/*!
+ * @startuml
+ * class Topic {
+ *   +Topic(topic: const char*, interval: float)
+ *   +getLastMillis(): unsigned long
+ *   +setLastMillis(lastMillis: unsigned long)
+ *   +getTopic(): const char*
+ *   +getInterval(): float
+ *   +updateLastValue(value: double)
+ *   +update(value: double): bool
+ *   -lastMillis: unsigned long
+ *   -interval: float
+ *   -topic: const char*
+ *   -lastValue: double
+}
+@enduml
+ */
+
 /**
  * Topic class for creating topics to be published
  */

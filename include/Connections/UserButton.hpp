@@ -7,6 +7,22 @@
 
 #include "Arduino.h"
 
+/*!
+@startuml
+class UserButton {
+  +UserButton(pin_: int)
+  +init()
+  +toggle(): bool
+  -pin: int
+  -debounce: double = 500
+  -lastPressed: unsigned long = 0
+  -toggled: bool = false
+  -risingEdgeBool: bool
+  -risingEdgeBool0: bool
+}
+@enduml
+ */
+
 /**
  * Class for initializing pushbutton and some function for reading
  */

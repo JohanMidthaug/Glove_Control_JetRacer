@@ -13,6 +13,30 @@
 #include <vector>
 #include <cmath>
 
+/*!
+ @startuml
+class IMU {
+  +IMU()
+  +init()
+  +run()
+  +heading(): float
+  +pitch(): float
+  +roll(): float
+  +getGestureHeading(): float
+  +getGesturePitch(): float
+  +getGestureRoll(): float
+  +getbno(): Adafruit_BNO055&
+  -bno: Adafruit_BNO055
+  -absHeading: float
+  -absPitch: float
+  -absRoll: float
+  -gestureHeading: float
+  -gesturePitch: float
+  -gestureRoll: float
+}
+@enduml
+ */
+
 /**
  * Class for initializing the BNO055 IMU sensor, also retrieving sensor data
  */

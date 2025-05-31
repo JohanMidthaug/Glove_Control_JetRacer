@@ -1,12 +1,92 @@
 @startuml
+skinparam classFontSize 12
+skinparam classAttributeFontSize 11
+skinparam classMethodFontSize 11
 
-class Animal {
-  +string name
-  +void speak()
+'=== Core Class ===
+class GloveController {
+  +setup()
+  +loop()
 }
 
-class Dog extends Animal {
-  +void bark()
+'=== Gesture Control ===
+class GestureControl {
+    +GestureControl(imu: IMU&)
+  +init()
+  +virtualJoystick(flex: FlexSensor&)
+  +orientation(flex: FlexSensor&)
+  +getX(): float
+  +getY(): float
+  +getZ(): float
+  +getRX(): float
+  +getRY(): float
+  +getRZ(): float
+  -imu: IMU&
+  -lastUpdate: unsigned long
+  -deadZone: static float
+  -gain: static float
+  -exponent: static float
 }
+
+'=== Sensor Classes ===
+class IMU {
+  +IMU()
+  +init()
+  +run()
+  +heading(): float
+  +pitch(): float
+  +roll(): float
+  +getGestureHeading(): float
+  +getGesturePitch(): float
+  +getGestureRoll(): float
+}
+
+class FlexSensor {
+  +FlexSensor(pin: int, threshold: int)
+  +init()
+  +read(): bool
+}
+
+class UserButton {
+  +UserButton(pin: int)
+  +init()
+  +toggle(): bool
+}
+
+'=== Network & Communication ===
+class WiFiWPA2 {
+  +WiFiWPA2()
+  +init()
+  +homeInit()
+  +getWiFiClient(): WiFiClient*
+}
+
+class MQTT {
+  +MQTT(client: WiFiClient*, broker: const char*, port: int)
+  +init()
+  +send(topic: Topic&, value: double)
+  +getMqttClient(): MqttClient*
+}
+
+class Topic {
+  +Topic(name: const char*, interval: float)
+  +getTopic(): const char*
+  +getInterval(): float
+  +update(value: double): bool
+}
+
+'=== Relationships ===
+GloveController --> GestureControl
+GloveController --> IMU
+GloveController --> FlexSensor
+GloveController --> UserButton
+GloveController --> MQTT
+GloveController --> WiFiWPA2
+
+GestureControl --> IMU : reads orientation
+GestureControl --> FlexSensor : joystick/orient
+
+MQTT --> Topic : publishes
+MQTT --> WiFiWPA2 : uses WiFiClient
 
 @enduml

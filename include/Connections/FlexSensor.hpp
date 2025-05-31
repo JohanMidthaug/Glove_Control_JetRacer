@@ -7,6 +7,19 @@
 
 #include "Arduino.h"
 
+/*!
+\startuml
+class FlexSensor {
+  +FlexSensor(int, int)
+  +init()
+  +read(): bool
+  -inputPin: int
+  -threshold: int
+}
+@enduml
+*/
+
+
 /**
  * Class for flex sensors, reading and returning if activated above a certain threshold.
  * Can also use for speed (according to how much you flex the sensor.

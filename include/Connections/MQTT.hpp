@@ -9,6 +9,23 @@
 #include <ArduinoMqttClient.h>
 #include <WiFi.h>
 #include "Connections/Topic.hpp"
+
+/*!
+@startuml
+class MQTT {
+  +MQTT(WiFiClient* wiFiClient, const char* broker, int port)
+  +init()
+  +send(topic: Topic&, value: double)
+  +getMqttClient(): MqttClient*
+  -mqttClient: MqttClient*
+  -broker_: const char*
+  -port_: int
+  -lastMillis: unsigned long
+  -lastValue: double
+}
+@enduml
+ */
+
 /**
  * Class for creating MQTT Client for publishing
  */
