@@ -5,48 +5,49 @@
 #include <cmath>
 
 // Constructor
-GestureControl::GestureControl(IMU& imu_):
-imu(imu_),
-minX(-800),
-minY(-800),
-minZ(-800),
-maxX(800),
-maxY(800),
-maxZ(800),
-interval(100) {}
+GestureControl::GestureControl(IMU& imu_): imu(imu_), interval(100) {}
 
 // Init function, used in setup
 void GestureControl::init() {}
 
-// Virtual joystick function
+// Virtual joystick function, got a little help from GPT for creating polar coordinates update for IMU control.
+// Makes it more intuitive
 void GestureControl::virtualJoystick(bool track) {
     if (track) {
-        float roll = imu.getGestureRoll();
-        float pitch = imu.getGesturePitch();
-        float heading = imu.getGestureHeading();
+        float dHeading = imu.getGestureHeading() - lastHeading;
+        float dPitch = imu.getGesturePitch() - lastPitch;
 
-        // Signed deltas from the reference we stored earlier
-        float dRoll    = roll    - lastRoll;
-        float dPitch   = pitch   - lastPitch;
-        float dHeading = angleDiff(heading, lastHeading);
+        float currentLength = sqrtf(xPos * xPos + yPos * yPos);
+        float currentAngle = atan2f(yPos, xPos) * 180.0f / M_PI;
 
-        const float cos45 = 0.7071;  // cos(45°)
-        const float sin45 = 0.7071;  // sin(45°)
+        // Stabilize angle if near center
+        if (currentLength < 0.05f) {
+            currentAngle = lastAngle;
+        } else {
+            lastAngle = currentAngle;
+        }
 
-        // Transform the deltas (assuming dPitch corresponds to Y and dRoll to X in world coordinates)
-        float transformedX = dHeading * cos45 - dPitch * sin45;
-        float transformedY = dHeading * sin45 + dPitch * cos45;
+        // Length update (pitch)
+        currentLength += processAxisDelta(dHeading, currentLength, maxLength);
+        currentLength = constrain(currentLength, 0.0f, maxLength); // Clamp length
 
-        driveAxis(transformedX, xPos);
-        driveAxis(transformedY, yPos);
+        // Angle update (roll) — only if meaningful
+        if (currentLength > 0.05f) {
+            float angleStep = processAxisDelta(dPitch, currentAngle, 180.0f);
+            angleStep *= (currentLength / maxLength); // Reduce angle influence near center
+            currentAngle += angleStep;
+        }
 
+        float radAngle = currentAngle * M_PI / 180.0f;
+        xPos = currentLength * cosf(radAngle);
+        yPos = currentLength * sinf(radAngle);
     } else {
         lastHeading = imu.getGestureHeading();
         lastPitch = imu.getGesturePitch();
-        lastRoll = imu.getGestureRoll();
     }
 }
 
+// Orientation
 void GestureControl::orientation(bool track) {
     if (track) {
         rX = imu.roll();
@@ -55,16 +56,13 @@ void GestureControl::orientation(bool track) {
     }
 }
 
+// Function for height control
 void GestureControl::heightControl(bool track) {
     if (track) {
         float heading = imu.getGestureHeading();
         float pitch = imu.getGesturePitch();
         float dPitch = (pitch - lastHeightPitch) / 50;
         float dHeading = angleDiff(heading, lastHeightHeading);
-        Serial.print("dPitch: ");
-        Serial.print(dPitch);
-        Serial.print("dPitch: ");
-        Serial.println(rZ);
         driveAxis(dHeading, zPos);
         driveAxisOrientation(dPitch, rZ);
     } else {
@@ -97,53 +95,54 @@ float GestureControl::getRZ() const {
     return rZ;
 }
 
+// Drive axis for updating position, currently only height
 void GestureControl::driveAxis(float deltaDeg, float &pos) {
     float mag = fabsf(deltaDeg);
+    float minZ = 0, maxZ = 800;
 
-    // 1. DEAD-ZONE
+    // Checking for dead zone
     if (mag < deadZone)
-        return;                          // ignore tiny motions
+        return;
 
-    // 2. Remove the dead-zone so the curve starts at zero
+    // Removing the dead-zone so the curve starts at zero
     mag -= deadZone;
 
-    // 3. Non-linear response (exponential)
+    // Exponential Response
     float step = gain * powf(mag, exponent);
+    float proposedPos = pos + copysignf(step, deltaDeg);
 
-    // 4. Apply the sign to preserve direction
-    pos += copysignf(step, deltaDeg);
+    // Applying boundary checks
+    if (proposedPos > maxZ) { pos = maxRZ; }
+    else if (proposedPos < minZ) { pos = minRZ; }
+    else { pos += proposedPos; }
 }
 
+// drive axis for rotation
 void GestureControl::driveAxisOrientation(float deltaDeg, float &pos) {
-    // 1. Calculate the proposed movement
+    // Calculate the proposed movement
     float mag = fabsf(deltaDeg);
     float step = gain * powf(mag, exponent);
     float proposedPos = pos + copysignf(step, deltaDeg);
 
-    // 2. Apply boundary checks
-    if (proposedPos > maxRZ) {
-        pos = maxRZ;  // Clamp to maximum
-    }
-    else if (proposedPos < minRZ) {
-        pos = minRZ;  // Clamp to minimum
-    }
-    else {
-        pos = proposedPos;  // Accept the change
-    }
+    // Apply boundary checks
+    if (proposedPos > maxRZ) { pos = maxRZ; }
+    else if (proposedPos < minRZ) { pos = minRZ; }
+    else { pos = proposedPos; }
 }
 
 // Keep heading differences inside −180 … +180 so wrap-around at 0/360 behaves.
 float GestureControl::angleDiff(float a, float b) {
     float d = fmodf(a - b + 540.0f, 360.0f) - 180.0f;
-    return d;   // signed shortest-arc difference
+    return d;
 }
 
-
-bool GestureControl::toggleGripper(bool height, bool track) {
+// For toggling the gripper, using two booleans
+String GestureControl::toggleGripper(bool height, bool track) {
     static bool toggleState = false;
+    String toggleStateString = "FALSE";
     static bool edgeTriggered = false;
     static unsigned long lastToggleTime = 0;
-    const unsigned long debounceDelay = 500; // milliseconds
+    const unsigned long debounceDelay = 600; // milliseconds
 
     if (height && track) {
         if (!edgeTriggered && millis() - lastToggleTime > debounceDelay) {
@@ -155,5 +154,29 @@ bool GestureControl::toggleGripper(bool height, bool track) {
         edgeTriggered = false;
     }
 
-    return toggleState;
+    if (toggleState) {
+        toggleStateString = "TRUE";
+    } else {
+        toggleStateString = "FALSE";
+    }
+
+    return toggleStateString;
+}
+
+// Drive axis for x and y position
+float GestureControl::processAxisDelta(float delta, float currentValue, float maxValue) {
+    // 1. Deadzone check
+    float mag = fabsf(delta);
+    if (mag < deadZone) return 0.0f;
+
+    // 2. Remove deadzone and apply non-linear response
+    mag -= deadZone;
+    float step = gain * powf(mag, exponent);
+
+    // 3. Apply direction
+    step = copysignf(step, delta);
+
+    // 4. Clamp to [-maxValue, maxValue]
+    float available = (step > 0) ? (maxValue - currentValue) : (-maxValue - currentValue);
+    return constrain(step, -fabsf(available), fabsf(available));
 }

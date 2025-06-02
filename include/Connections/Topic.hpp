@@ -68,6 +68,19 @@ public:
     void updateLastValue(double value);
 
     /**
+     * Function for updating the last string sent
+     * @param string THe string value
+     */
+    void updateLastString(String string);
+
+    /**
+     * Function for checking of the current string to send is the same as before
+     * @param string String to send
+     * @return Returns true or false based on if the current value is the same as the old
+     */
+    bool updateString(String string);
+
+    /**
      * Used for checking of the last value sent is the same, in that case, not sending value to broker
      * @param value value to send
      * @return returning boolean if last value is different, returns true
@@ -79,6 +92,7 @@ private:
     float interval;
     const char* topic;
     double lastValue;
+    String lastString;
 };
 
 #endif //MOM_GLOVE_TOPIC_HPP

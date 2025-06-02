@@ -36,3 +36,11 @@ void Topic::updateLastValue(double value) {
 bool Topic::update(double value) {
     if (lastValue != value) {return true;} else {return false;}
 }
+
+void Topic::updateLastString(String string) {
+    lastString = string;
+}
+
+bool Topic::updateString(String string) {
+    if (lastString != string) {return true;} else {return false;}
+}

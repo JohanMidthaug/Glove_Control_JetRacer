@@ -28,21 +28,29 @@ public:
 
     /**
      * Virtual joystick function for tracking relative position from start of flex sensor
-     * @param flexSensor An instance of flex sensor class, used for toggling of tracking
+     * @param track A bool value to toggle the update of the variables
      */
     void virtualJoystick(bool track);
 
     /**
      * Function for updating total orientation, not relative, but absolute orientation.
-     * @param flexSensor An instance of flex sensor class, used for toggling
+     * @param track A bool value to toggle the update of the variables
      */
     void orientation(bool track);
 
-
+    /**
+     * This function updates the height and the last joint angle in the kinematic chain, rZ
+     * @param track A bool value to toggle the update of the variables
+     */
     void heightControl(bool track);
 
-
-    bool toggleGripper(bool heigt, bool track);
+    /**
+     * Function for toggling the gripper for the robot, taking two bool values. Using two flex sensor for toggling
+     * @param heigt Bool value that controls the height and last joint angle
+     * @param track Bool value that controls the position adjustment
+     * @return Bool value to toggle the gripper. Has a 600 mS debounce rate
+     */
+    String toggleGripper(bool heigt, bool track);
 
     /**
      * Getter function
@@ -83,12 +91,9 @@ public:
 private:
     IMU& imu;
 
-    float minX, maxX, minY, maxY, minZ, maxZ;
-
     float maxRZ = PI, minRZ = -PI;
 
     float xPos = 250, yPos = -400, zPos = 150;
-    float rX = 3.14, rY = 0;
     float rZ = 1.83;
 
     float lastHeading = 0, lastPitch = 0, lastRoll = 0;
@@ -100,12 +105,19 @@ private:
     // Updated variables (help from GPT)
     static constexpr float deadZone = 10.0f;
     static constexpr float gain = 0.001f; // How far one 'unit' moves the object, think this will be 1
-    static constexpr float exponent = 1.5f;
+    static constexpr float exponent = 2.0f;
 
     // Function for movement
     void driveAxis(float deltaDeg, float& pos);
     void driveAxisOrientation(float deltaDeg, float &pos);
     float angleDiff(float a, float b);
+    float processAxisDelta(float delta, float currentValue, float maxValue);
+
+    // In your constructor:
+    float baseGain = 0.3f;    // Start low, increase as needed
+    float maxLength = 850.0f; // Your robot's reach
+    float lastAngle; // Add to your class
+
 };
 
 

@@ -45,6 +45,22 @@ void MQTT::send(Topic& topic, double value) {
     }
 }
 
+void MQTT::sendString(Topic &topic, String string) {
+    if ((millis() - topic.getLastMillis() >= topic.getInterval()) && topic.updateString(string)) {
+        topic.setLastMillis(millis());
+        // Debug messages:
+        Serial.print("Sending message to: ");
+        Serial.println(topic.getTopic());
+        Serial.println(string);
+        topic.updateLastString(string);
+
+        // Sending topic and value
+        mqttClient->beginMessage(topic.getTopic());
+        mqttClient->print(string);
+        mqttClient->endMessage();
+    }
+}
+
 // Getter function for client
 MqttClient* MQTT::getMqttClient() {
     return mqttClient;

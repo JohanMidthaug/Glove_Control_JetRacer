@@ -14,6 +14,7 @@ IMU bno_IMU;
 
 // Creating MQTT class connecting to NTNU Broker
 MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
+//MQTT home(wifi.getWiFiClient(), "10.24.8.108", 1883);
 
 // Defining MQTT Topics
 Topic rxValue("mom/rxValue", 100);
@@ -25,7 +26,7 @@ Topic zValue("mom/zValue", 100);
 Topic gripper("mom/gripper", 100);
 
 // Defining flex sensors
-FlexSensor toggleHeight(4, 3100);
+FlexSensor toggleHeight(4, 2900);
 FlexSensor toggleTrack(7, 3100);
 
 // Gesture Control
@@ -34,11 +35,13 @@ GestureControl gestureControl(bno_IMU);
 // User button
 UserButton toggleButton(10);
 
-bool toggleGripper = 0;
+// Value for sending gripper
+String toggleGripper = "FALSE";
 
 void setup() {
     Serial.begin(115200);
 
+    // Button init
     toggleButton.init();
     toggleHeight.init();
 
@@ -49,7 +52,7 @@ void setup() {
     bno_IMU.init();
     Serial.println(" finished!");
 
-    // Init flexsensors
+    // Init flex sensors
     toggleTrack.init();
 
     // LED initialization
@@ -63,16 +66,17 @@ void loop() {
     mqtt.getMqttClient()->poll();
 
     if (toggleButton.toggle()) {
+        // Running imu and gesture control, only if button is toggled
         bno_IMU.run();
         gestureControl.virtualJoystick(toggleTrack.read() && !toggleHeight.read());
         gestureControl.heightControl(toggleHeight.read() && !toggleTrack.read());
-        //gestureControl.orientation(toggleOrientation.read());
-        digitalWrite(LED_RED, HIGH);
-        digitalWrite(LED_GREEN, LOW);
-
         toggleGripper = gestureControl.toggleGripper(toggleTrack.read(), toggleHeight.read());
 
+        // Turning on green light
+        digitalWrite(LED_RED, HIGH);
+        digitalWrite(LED_GREEN, LOW);
     } else {
+        // Turning on red light
         digitalWrite(LED_RED, LOW);
         digitalWrite(LED_GREEN, HIGH);
     }
@@ -82,12 +86,10 @@ void loop() {
     mqtt.send(yValue, gestureControl.getY());
     mqtt.send(zValue, gestureControl.getZ());
 
-    // Orientation values
-    mqtt.send(rxValue, gestureControl.getRX());
-    mqtt.send(ryValue, gestureControl.getRY());
+    // Orientation value
     mqtt.send(rzValue, gestureControl.getRZ());
 
     // Gripper
-    mqtt.send(gripper, toggleGripper);
+    mqtt.sendString(gripper, toggleGripper);
 
 }

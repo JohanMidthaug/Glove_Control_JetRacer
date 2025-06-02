@@ -52,6 +52,13 @@ public:
     void send(Topic& topic, double value);
 
     /**
+     * Function for sending strings to broker, used for gripper boolean value
+     * @param topic The topic name
+     * @param string String value to send
+     */
+    void sendString(Topic& topic, String string);
+
+    /**
      * Getter function for pointer to mqttclient
      * @return
      */
