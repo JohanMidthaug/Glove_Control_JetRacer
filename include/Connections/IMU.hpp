@@ -12,6 +12,7 @@
 #include "utility/imumaths.h"
 #include <vector>
 #include <cmath>
+#include "Adafruit_LSM9DS1.h"
 
 /*!
  @startuml
@@ -101,6 +102,10 @@ public:
 
 private:
     Adafruit_BNO055 bno;
+    Adafruit_LSM9DS1 lsm;
+
+    float gyroBiasX = 0, gyroBiasY = 0, gyroBiasZ = 0;
+    unsigned long lastUpdate = 0;
 
     float absHeading;
     float absPitch;

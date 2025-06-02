@@ -13,7 +13,7 @@ void FlexSensor::init() {
 
 // Read function
 bool FlexSensor::read() {
-    Serial.println(analogRead(inputPin));
+    //Serial.println(analogRead(inputPin));
     if (analogRead(inputPin) > threshold) {
         return true;
     } else {

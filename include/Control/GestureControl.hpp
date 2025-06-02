@@ -30,13 +30,19 @@ public:
      * Virtual joystick function for tracking relative position from start of flex sensor
      * @param flexSensor An instance of flex sensor class, used for toggling of tracking
      */
-    void virtualJoystick(FlexSensor& flexSensor);
+    void virtualJoystick(bool track);
 
     /**
      * Function for updating total orientation, not relative, but absolute orientation.
      * @param flexSensor An instance of flex sensor class, used for toggling
      */
-    void orientation(FlexSensor& flexSensor);
+    void orientation(bool track);
+
+
+    void heightControl(bool track);
+
+
+    bool toggleGripper(bool heigt, bool track);
 
     /**
      * Getter function
@@ -79,10 +85,14 @@ private:
 
     float minX, maxX, minY, maxY, minZ, maxZ;
 
-    float xPos = 300, yPos = 50, zPos = 100;
-    float rX = 3.14, rY = 0, rZ = 1.83;
+    float maxRZ = PI, minRZ = -PI;
+
+    float xPos = 250, yPos = -400, zPos = 150;
+    float rX = 3.14, rY = 0;
+    float rZ = 1.83;
 
     float lastHeading = 0, lastPitch = 0, lastRoll = 0;
+    float lastHeightHeading = 0, lastHeightPitch = 0;
 
     float interval;
     unsigned long lastUpdate = 0;
@@ -94,6 +104,7 @@ private:
 
     // Function for movement
     void driveAxis(float deltaDeg, float& pos);
+    void driveAxisOrientation(float deltaDeg, float &pos);
     float angleDiff(float a, float b);
 };
 

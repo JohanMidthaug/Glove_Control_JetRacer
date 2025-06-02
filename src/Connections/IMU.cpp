@@ -1,113 +1,75 @@
-//
-// Created by Herman Hårstad Gran on 08/04/2025.
-//
 #include "Connections/IMU.hpp"
-// Constructor
-IMU::IMU() {
-    bno = Adafruit_BNO055(55, 0x28);
+
+IMU::IMU() : lsm() {
+    absHeading = absPitch = absRoll = 0;
+    gestureHeading = gesturePitch = gestureRoll = 0;
 }
 
-// Init function
 void IMU::init() {
-    if (!bno.begin()) {
-        Serial.println("BNO055 not detected ... Check wiring or I2C address");
+    if (!lsm.begin()) {
+        Serial.println("LSM9DS1 not detected ... Check wiring or I2C address");
+        while (1);
     }
-    // Setting to not use external crystal oscillator
-    bno.setExtCrystalUse(false);
-    bno.setMode(OPERATION_MODE_NDOF);
+
+    lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_2G);
+    lsm.setupMag(lsm.LSM9DS1_MAGGAIN_4GAUSS);
+    lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_245DPS);
 }
 
-// Math function for converting quaternions to euler angles, some help from GPT to create this
-void quaternionToEulerRad(const imu::Quaternion& q, float& roll, float& pitch, float& yaw) {
-    // Assuming quaternion is normalized and in (w, x, y, z)
-    float w = q.w();
-    float x = q.x();
-    float y = q.y();
-    float z = q.z();
-
-    // Roll (X-axis rotation)
-    float sinr_cosp = 2.0f * (w * x + y * z);
-    float cosr_cosp = 1.0f - 2.0f * (x * x + y * y);
-    roll = std::atan2(sinr_cosp, cosr_cosp);
-
-    // Pitch (Y-axis rotation)
-    float sinp = 2.0f * (w * y - z * x);
-    if (std::abs(sinp) >= 1.0f)
-        pitch = std::copysign(M_PI / 2.0f, sinp); // Use 90 degrees if out of range
-    else
-        pitch = std::asin(sinp);
-
-    // Yaw (Z-axis rotation)
-    float siny_cosp = 2.0f * (w * z + x * y);
-    float cosy_cosp = 1.0f - 2.0f * (y * y + z * z);
-    yaw = std::atan2(siny_cosp, cosy_cosp);
-}
-
-// Function for sensor data retrieval
 void IMU::run() {
-    static bool first = true;
+    sensors_event_t a, m, g, temp;
+    lsm.getEvent(&a, &m, &g, &temp);
 
-    static imu::Quaternion qPrev;
+    // --- Orientation from accelerometer ---
+    float ax = a.acceleration.x;
+    float ay = a.acceleration.y;
+    float az = a.acceleration.z;
 
-    if (first) { first = false; return; }
+    absRoll = atan2(ay, az) * 180.0 / M_PI;
+    absPitch = atan2(-ax, sqrt(ay * ay + az * az)) * 180.0 / M_PI;
 
-    imu::Quaternion qNow = bno.getQuat();
+    // --- Heading from magnetometer ---
+    float mx = m.magnetic.x;
+    float my = m.magnetic.y;
 
-    float roll, pitch, yaw;
-    quaternionToEulerRad(qNow, roll, pitch, yaw);
+    absHeading = atan2(my, mx) * 180.0 / M_PI;
+    if (absHeading < 0) absHeading += 360.0;
 
-    absRoll = roll;
-    absPitch = pitch;
-    absHeading = yaw;
+    // --- Accurate dt (in seconds) ---
+    unsigned long now = millis();
+    float dt = (now - lastUpdate) / 1000.0f;
+    lastUpdate = now;
 
-    // Hotfix for tracking issue
-    imu::Quaternion dQ = qPrev.conjugate() * qNow;
-    qPrev = qNow;
+    // --- Gyroscope-based delta integration (bias-corrected) ---
+    float dRollDeg = (g.gyro.x - gyroBiasX) * dt * 180.0 / M_PI;
+    float dPitchDeg = (g.gyro.y - gyroBiasY) * dt * 180.0 / M_PI;
+    float dHeadingDeg = (g.gyro.z - gyroBiasZ) * dt * 180.0 / M_PI;
 
-    float dRollRad = 2.0f * dQ.x();
-    float dPitchRad = 2.0f * dQ.y();
-    float dHeadingRad = 2.0f * dQ.z();
-
-    float dRollDeg = dRollRad * 57.29578f;
-    float dPitchDeg = dPitchRad * 57.29578f;
-    float dHeadingDeg = dHeadingRad * 57.29578f;
-
-    gestureRoll += dRollDeg;
-    gesturePitch += dPitchDeg;
+    gestureRoll    += dRollDeg;
+    gesturePitch   += dPitchDeg;
     gestureHeading += dHeadingDeg;
 }
 
-// Getter function
 float IMU::heading() {
     return absHeading;
 }
 
-// Getter function
 float IMU::pitch() {
     return absPitch;
 }
 
-// Getter function
 float IMU::roll() {
     return absRoll;
 }
 
-// Getter function
 float IMU::getGestureHeading() {
     return gestureHeading;
 }
 
-// Getter function
 float IMU::getGesturePitch() {
     return gesturePitch;
 }
 
-// Getter function
 float IMU::getGestureRoll() {
     return gestureRoll;
-}
-
-// Getter function
-Adafruit_BNO055& IMU::getbno() {
-    return bno;
 }

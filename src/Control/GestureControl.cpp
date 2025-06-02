@@ -7,21 +7,20 @@
 // Constructor
 GestureControl::GestureControl(IMU& imu_):
 imu(imu_),
-minX(-850),
-minY(-850),
-minZ(-850),
-maxX(850),
-maxY(850),
-maxZ(850),
+minX(-800),
+minY(-800),
+minZ(-800),
+maxX(800),
+maxY(800),
+maxZ(800),
 interval(100) {}
 
 // Init function, used in setup
 void GestureControl::init() {}
 
 // Virtual joystick function
-void GestureControl::virtualJoystick(FlexSensor& flexSensor) {
-    if (flexSensor.read()) {
-
+void GestureControl::virtualJoystick(bool track) {
+    if (track) {
         float roll = imu.getGestureRoll();
         float pitch = imu.getGesturePitch();
         float heading = imu.getGestureHeading();
@@ -31,46 +30,47 @@ void GestureControl::virtualJoystick(FlexSensor& flexSensor) {
         float dPitch   = pitch   - lastPitch;
         float dHeading = angleDiff(heading, lastHeading);
 
-        /*
-        Serial.print("Delta | roll: ");
-        Serial.print(dRoll);
-        Serial.print(" pitch: ");
-        Serial.print(dPitch);
-        Serial.print(" heading: ");
-        Serial.println(dHeading);
-        */
+        const float cos45 = 0.7071;  // cos(45°)
+        const float sin45 = 0.7071;  // sin(45°)
 
-        // 3. Update virtual position for each axis
-        driveAxis(dHeading,    xPos);
-        driveAxis(dPitch,   yPos);
+        // Transform the deltas (assuming dPitch corresponds to Y and dRoll to X in world coordinates)
+        float transformedX = dHeading * cos45 - dPitch * sin45;
+        float transformedY = dHeading * sin45 + dPitch * cos45;
+
+        driveAxis(transformedX, xPos);
+        driveAxis(transformedY, yPos);
 
     } else {
         lastHeading = imu.getGestureHeading();
         lastPitch = imu.getGesturePitch();
         lastRoll = imu.getGestureRoll();
-        /*
-        Serial.print("Delta | roll: ");
-        Serial.print(lastRoll);
-        Serial.print(" pitch: ");
-        Serial.print(lastPitch);
-        Serial.print(" heading: ");
-        Serial.println(lastHeading);
-         */
     }
 }
 
-void GestureControl::orientation(FlexSensor &flexSensor) {
-    if (flexSensor.read()) {
+void GestureControl::orientation(bool track) {
+    if (track) {
         rX = imu.roll();
         rY = imu.pitch();
         rZ = imu.heading();
     }
-    Serial.print("Orientation | rX: ");
-    Serial.print(imu.roll());
-    Serial.print(" rY: ");
-    Serial.print(imu.pitch());
-    Serial.print(" rZ: ");
-    Serial.println(imu.heading());
+}
+
+void GestureControl::heightControl(bool track) {
+    if (track) {
+        float heading = imu.getGestureHeading();
+        float pitch = imu.getGesturePitch();
+        float dPitch = (pitch - lastHeightPitch) / 50;
+        float dHeading = angleDiff(heading, lastHeightHeading);
+        Serial.print("dPitch: ");
+        Serial.print(dPitch);
+        Serial.print("dPitch: ");
+        Serial.println(rZ);
+        driveAxis(dHeading, zPos);
+        driveAxisOrientation(dPitch, rZ);
+    } else {
+        lastHeightHeading = imu.getGestureHeading();
+        lastHeightPitch = imu.getGesturePitch();
+    }
 }
 
 float GestureControl::getX() const {
@@ -114,10 +114,46 @@ void GestureControl::driveAxis(float deltaDeg, float &pos) {
     pos += copysignf(step, deltaDeg);
 }
 
+void GestureControl::driveAxisOrientation(float deltaDeg, float &pos) {
+    // 1. Calculate the proposed movement
+    float mag = fabsf(deltaDeg);
+    float step = gain * powf(mag, exponent);
+    float proposedPos = pos + copysignf(step, deltaDeg);
+
+    // 2. Apply boundary checks
+    if (proposedPos > maxRZ) {
+        pos = maxRZ;  // Clamp to maximum
+    }
+    else if (proposedPos < minRZ) {
+        pos = minRZ;  // Clamp to minimum
+    }
+    else {
+        pos = proposedPos;  // Accept the change
+    }
+}
+
 // Keep heading differences inside −180 … +180 so wrap-around at 0/360 behaves.
-float GestureControl::angleDiff(float a, float b)
-{
+float GestureControl::angleDiff(float a, float b) {
     float d = fmodf(a - b + 540.0f, 360.0f) - 180.0f;
     return d;   // signed shortest-arc difference
 }
 
+
+bool GestureControl::toggleGripper(bool height, bool track) {
+    static bool toggleState = false;
+    static bool edgeTriggered = false;
+    static unsigned long lastToggleTime = 0;
+    const unsigned long debounceDelay = 500; // milliseconds
+
+    if (height && track) {
+        if (!edgeTriggered && millis() - lastToggleTime > debounceDelay) {
+            toggleState = !toggleState;
+            edgeTriggered = true;
+            lastToggleTime = millis();
+        }
+    } else {
+        edgeTriggered = false;
+    }
+
+    return toggleState;
+}

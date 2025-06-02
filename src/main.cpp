@@ -22,16 +22,25 @@ Topic rzValue("mom/rzValue", 100);
 Topic xValue("mom/xValue", 100);
 Topic yValue("mom/yValue", 100);
 Topic zValue("mom/zValue", 100);
+Topic gripper("mom/gripper", 100);
 
 // Defining flex sensors
-FlexSensor toggleTrack(4, 3350);
-FlexSensor toggleOrientation(5, 3350);
+FlexSensor toggleHeight(4, 3100);
+FlexSensor toggleTrack(7, 3100);
 
 // Gesture Control
 GestureControl gestureControl(bno_IMU);
 
+// User button
+UserButton toggleButton(10);
+
+bool toggleGripper = 0;
+
 void setup() {
     Serial.begin(115200);
+
+    toggleButton.init();
+    toggleHeight.init();
 
     // Initializing classes
     wifi.init();
@@ -42,7 +51,6 @@ void setup() {
 
     // Init flexsensors
     toggleTrack.init();
-    toggleOrientation.init();
 
     // LED initialization
     pinMode(LED_GREEN, OUTPUT);
@@ -54,9 +62,20 @@ void loop() {
     // avoids being disconnected by the broker
     mqtt.getMqttClient()->poll();
 
-    bno_IMU.run();
-    gestureControl.virtualJoystick(toggleTrack);
-    gestureControl.orientation(toggleOrientation);
+    if (toggleButton.toggle()) {
+        bno_IMU.run();
+        gestureControl.virtualJoystick(toggleTrack.read() && !toggleHeight.read());
+        gestureControl.heightControl(toggleHeight.read() && !toggleTrack.read());
+        //gestureControl.orientation(toggleOrientation.read());
+        digitalWrite(LED_RED, HIGH);
+        digitalWrite(LED_GREEN, LOW);
+
+        toggleGripper = gestureControl.toggleGripper(toggleTrack.read(), toggleHeight.read());
+
+    } else {
+        digitalWrite(LED_RED, LOW);
+        digitalWrite(LED_GREEN, HIGH);
+    }
 
     // Position values
     mqtt.send(xValue, gestureControl.getX());
@@ -67,5 +86,8 @@ void loop() {
     mqtt.send(rxValue, gestureControl.getRX());
     mqtt.send(ryValue, gestureControl.getRY());
     mqtt.send(rzValue, gestureControl.getRZ());
+
+    // Gripper
+    mqtt.send(gripper, toggleGripper);
 
 }
