@@ -10,7 +10,6 @@ MQTT* MQTT::instance = nullptr;
 MQTT::MQTT(WiFiClient* wiFiClient, const char* broker, int port) : broker_(broker), port_(port), lastMillis(millis()) {
     mqttClient = new MqttClient(wiFiClient);
     instance   = this;
-    for (int i = 0; i < 6; i++) jointAngles[i] = 0.0;
 }
 
 // Initializing function, used in setup
@@ -98,14 +97,16 @@ void MQTT::messageRouter(int messageSize) {
 void MQTT::messageHandler(int messageSize) {
     // Remember that mqttClient is an instance pointer, so you must use instance->mqttClient
     String topicStr = mqttClient->messageTopic();
+    String message = "";
+    for (int i = 0; i < messageSize; i++) {
+        char c = (char)mqttClient->read();
+        message += c;
+    }
+
     if (topicStr == "mom/invalidPose") {
-        String message = "";
+
 
         // Read exactly messageSize bytes from the client
-        for (int i = 0; i < messageSize; i++) {
-            char c = (char)mqttClient->read();
-            message += c;
-        }
 
         if (message == "TRUE") {
             digitalWrite(LED_BLUE, LOW);
@@ -114,23 +115,31 @@ void MQTT::messageHandler(int messageSize) {
         }
     }
 
-    if (topicStr == "mom/joint0") {
-        jointAngles[0] = mqttClient->read();
-    } else if (topicStr == "mom/joint1") {
-        jointAngles[1] = mqttClient->read();
-    } else if (topicStr == "mom/joint2") {
-        jointAngles[2] = mqttClient->read();
-    } else if (topicStr == "mom/joint3") {
-        jointAngles[3] = mqttClient->read();
-    } else if (topicStr == "mom/joint4") {
-        jointAngles[4] = mqttClient->read();
+    if (topicStr == "mom/xActualValue") {
+        xPos = message.toFloat();
+    } else if (topicStr == "mom/yActualValue") {
+        yPos = message.toFloat();
+    } else if (topicStr == "mom/zActualValue") {
+        zPos = message.toFloat();
     } else if (topicStr == "mom/joint5") {
-        jointAngles[5] = mqttClient->read();
+        rotation = message.toFloat();
     }
 
 }
 
 // Getter function for joint angles that MQTT Client is subscribing to
-double* MQTT::getJointAngles() {
-    return jointAngles;
+float MQTT::getXpos() {
+    return xPos;
 }
+
+float MQTT::getYpos() {
+    return yPos;
+}
+
+float MQTT::getZpos() {
+    return zPos;
+}
+float MQTT::getRotation() {
+    return rotation;
+}
+

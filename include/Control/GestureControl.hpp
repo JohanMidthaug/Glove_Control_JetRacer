@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #include "Connections/IMU.hpp"
 #include <Connections/FlexSensor.hpp>
+#include "Connections/MQTT.hpp"
 
 /**
  * Class for gesture control sensor, like a virtual joystick
@@ -102,6 +103,8 @@ public:
      */
     void computeForwardKinematics(const double q[6], bool trigger);
 
+    void updateOnStop(bool trigger, MQTT &mqtt);
+
 private:
     IMU& imu;
 
@@ -132,6 +135,8 @@ private:
     float maxLength = 850.0f; // Your robot's reach
     float lastAngle; // Add to your class
     bool prevTrigger;      // the state just before trigger was updated
+    bool triggered = false;
+    unsigned long prevMillis = 0;
 };
 
 

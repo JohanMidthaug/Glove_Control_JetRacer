@@ -27,11 +27,9 @@ Topic invalidPose("mom/invalidPose", 100);
 Topic updating("mom/updating", 100);
 
 // joints
-Topic joint0("mom/joint0", 100);
-Topic joint1("mom/joint1", 100);
-Topic joint2("mom/joint2", 100);
-Topic joint3("mom/joint3", 100);
-Topic joint4("mom/joint4", 100);
+Topic xPos("mom/xActualValue", 100);
+Topic yPos("mom/yActualValue", 100);
+Topic zPos("mom/zActualValue", 100);
 Topic joint5("mom/joint5", 100);
 
 // Defining flex sensors
@@ -48,7 +46,7 @@ UserButton toggleButton(10);
 String toggleGripper = "FALSE";
 String updatingValue = "FALSE";
 
-MQTT mqtt(wifi.getWiFiClient(), "10.24.8.108", 1883, (toggleHeight.read() or toggleTrack.read()), gestureControl);
+MQTT mqtt(wifi.getWiFiClient(), "10.24.8.108", 1883);
 void setup() {
     Serial.begin(115200);
 
@@ -62,11 +60,9 @@ void setup() {
 
     // MQTT Subscribing to topic
     mqtt.subscribe(invalidPose);
-    mqtt.subscribe(joint0);
-    mqtt.subscribe(joint1);
-    mqtt.subscribe(joint2);
-    mqtt.subscribe(joint3);
-    mqtt.subscribe(joint4);
+    mqtt.subscribe(xPos);
+    mqtt.subscribe(yPos);
+    mqtt.subscribe(zPos);
     mqtt.subscribe(joint5);
 
     // LED initialization
@@ -87,7 +83,10 @@ void loop() {
         gestureControl.heightControl(toggleHeight.read() && !toggleTrack.read());
         toggleGripper = gestureControl.toggleGripper(toggleTrack.read(), toggleHeight.read());
 
-        //gestureControl.computeForwardKinematics(mqtt.getJointAngles(), toggleTrack.read() or toggleHeight.read());
+        //
+        gestureControl.updateOnStop(toggleHeight.read() or toggleTrack.read(), mqtt);
+
+        updatingValue = updateBoolValue(toggleTrack.read() or toggleHeight.read());
 
         // Turning on green light
         digitalWrite(LED_RED, HIGH);
@@ -104,7 +103,18 @@ void loop() {
     mqtt.publish(yValue, gestureControl.getY());
     mqtt.publish(zValue, gestureControl.getZ());
     mqtt.publish(rzValue, gestureControl.getRZ());
+    mqtt.publishString(updating, updatingValue);
 
     // Gripper
     mqtt.publishString(gripper, toggleGripper);
+}
+
+String updateBoolValue(bool updating_) {
+    String string;
+    if (updating_) {
+        string = "TRUE";
+    } else {
+        string = "FALSE";
+    }
+    return string;
 }

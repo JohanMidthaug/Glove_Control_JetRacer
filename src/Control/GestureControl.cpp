@@ -293,4 +293,24 @@ void GestureControl::computeForwardKinematics(const double q[6], bool trigger) {
     prevTrigger = trigger;
 }
 
+// Update
+void GestureControl::updateOnStop(bool trigger, MQTT &mqtt) {
+
+    if (!trigger) {
+        Serial.print(prevMillis);
+        xPos = mqtt.getXpos();
+        yPos = mqtt.getYpos();
+        zPos = mqtt.getZpos();
+        rZ = mqtt.getRotation();
+        Serial.print("Updated position values to x: ");
+        Serial.print(xPos);
+        Serial.print(" y: ");
+        Serial.print(yPos);
+        Serial.print(" z: ");
+        Serial.print(zPos);
+        Serial.print(" rotation: ");
+        Serial.println(rZ);
+
+    }
+}
 

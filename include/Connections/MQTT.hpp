@@ -9,7 +9,7 @@
 #include <ArduinoMqttClient.h>
 #include <WiFi.h>
 #include "Connections/Topic.hpp"
-#include "Control/GestureControl.hpp"
+
 
 /*!
 @startuml
@@ -71,11 +71,13 @@ public:
      */
     void subscribe(Topic& topic);
 
-    /**
-     * MQTT Client is subscribing on the joint angles, so this is a getter for the joint angles
-     * @return A list of joint angles 6-DoF
-     */
-    double* getJointAngles();
+    float getXpos();
+    float getYpos();
+    float getZpos();
+    float getRotation();
+
+
+
 private:
     MqttClient* mqttClient;
     const char* broker_;
@@ -83,11 +85,12 @@ private:
     unsigned long lastMillis;
     double lastValue;
 
+    float xPos = 0, yPos = 0, zPos = 0;
+    float rotation = 0;
 
     static MQTT* instance;
     void messageHandler(int messageSize);
     static void messageRouter(int messageSize);
-    double jointAngles[6];   // holds the latest joint0…joint5 values
 
 };
 
