@@ -5,87 +5,99 @@ skinparam classMethodFontSize 11
 
 '=== Core Class ===
 class GloveController {
-  +setup()
-  +loop()
+    +setup()
+    +loop()
 }
 
 '=== Gesture Control ===
 class GestureControl {
     +GestureControl(imu: IMU&)
-  +init()
-  +virtualJoystick(bool)
-  +orientation(bool)
-  +toggleGripper(bool: sensor, bool:sensor): String
-  +getX(): float
-  +getY(): float
-  +getZ(): float
-  +getRX(): float
-  +getRY(): float
-  +getRZ(): float
-  -imu: IMU&
-  -lastUpdate: unsigned long
-  -deadZone: static float
-  -gain: static float
-  -exponent: static float
+    +init()
+    +virtualJoystick(bool)
+    +orientation(bool)
+    +toggleGripper(sensor: bool, sensor: bool): String
+    +getX(): float
+    +getY(): float
+    +getZ(): float
+    +getRX(): float
+    +getRY(): float
+    +getRZ(): float
+    +setX(float: pos)
+    +setY(float: pos)
+    +setZ(float: pos)
+    +computeForwardKinematics(q[6]: const double, trigger: bool)
+    -imu: IMU&
+    -lastUpdate: unsigned long
+    -deadZone: static float
+    -gain: static float
+    -exponent: static float
+    -angleDiff(a: float, b: float): float
+    -driveAxis(deltaDeg: float, pos: &float)
+    -driveAxisOrientation(deltaDeg: float, currentValue: float, maxValue: float): float
+    -processAxisDelta(deltaDeg: float, currentValue: float, maxValue; float): float
 }
 
 '=== Sensor Classes ===
 class IMU {
-  +IMU()
-  +init()
-  +run()
-  +heading(): float
-  +pitch(): float
-  +roll(): float
-  +getGestureHeading(): float
-  +getGesturePitch(): float
-  +getGestureRoll(): float
+    +IMU()
+    +init()
+    +run()
+    +heading(): float
+    +pitch(): float
+    +roll(): float
+    +getGestureHeading(): float
+    +getGesturePitch(): float
+    +getGestureRoll(): float
 }
 
 class FlexSensor {
-  +FlexSensor(pin: int, threshold: int)
-  +init()
-  +read(): bool
+    +FlexSensor(pin: int, threshold: int)
+    +init()
+    +read(): bool
 }
 
 class UserButton {
-  +UserButton(pin: int)
-  +init()
-  +toggle(): bool
-}
+    +UserButton(pin: int)
+    +init()
+    +toggle(): bool
+    }
 
 '=== Network & Communication ===
 class WiFiWPA2 {
-  +WiFiWPA2()
-  +init()
-  +homeInit()
-  +getWiFiClient(): WiFiClient*
+    +WiFiWPA2()
+    +init()
+    +homeInit()
+    +getWiFiClient(): WiFiClient*
 }
 
 class MQTT {
-  +MQTT(client: WiFiClient*, broker: const char*, port: int)
-  +init()
-  +send(topic: Topic&, value: double)
-  +getMqttClient(): MqttClient*
+    +MQTT(client: WiFiClient*, broker: const char*, port: int)
+    +init()
+    +publish(topic: Topic&, value: double)
+    +publishString(topic: &Topic, string: String)
+    +subscribe(topic: &Topic)
+    +getMqttClient(): MqttClient*
+    +getJointAngles(: double*
+    -messageHandler(messageSize: int)
+    -messageRouter((messageSize: int)): static
 }
 
 class Topic {
-  +Topic(name: const char*, interval: float)
-  +getTopic(): const char*
-  +getInterval(): float
-  +update(value: double): bool
+    +Topic(name: const char*, interval: float)
+    +getTopic(): const char*
+    +getInterval(): float
+    +update(value: double): bool
+    +updateString(string: String): bool
 }
 
 '=== Relationships ===
 GloveController --> GestureControl
-GloveController --> IMU
-GloveController --> FlexSensor
-GloveController --> UserButton
+GloveController --> UserButton : toggle usage
 GloveController --> MQTT
 GloveController --> WiFiWPA2
 
 GestureControl --> IMU : reads orientation
-GestureControl --> FlexSensor : joystick/orient
+GestureControl --> FlexSensor : joystick/orientation trigger
 
 MQTT --> Topic : publishes
 MQTT --> WiFiWPA2 : uses WiFiClient
