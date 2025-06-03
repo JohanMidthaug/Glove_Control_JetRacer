@@ -37,10 +37,12 @@ bool Topic::update(double value) {
     if (lastValue != value) {return true;} else {return false;}
 }
 
+// Updating last sent string
 void Topic::updateLastString(String string) {
     lastString = string;
 }
 
+// Checking of the last sent bool is the same as this one
 bool Topic::updateString(String string) {
     if (lastString != string) {return true;} else {return false;}
 }

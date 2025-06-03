@@ -7,7 +7,7 @@
 MQTT* MQTT::instance = nullptr;
 
 // Constructor for MQTT class
-MQTT::MQTT(WiFiClient* wiFiClient, const char* broker, int port, bool trigger, GestureControl &gestureControl) : broker_(broker), port_(port), lastMillis(millis()), gestureControl(gestureControl) {
+MQTT::MQTT(WiFiClient* wiFiClient, const char* broker, int port) : broker_(broker), port_(port), lastMillis(millis()) {
     mqttClient = new MqttClient(wiFiClient);
     instance   = this;
     for (int i = 0; i < 6; i++) jointAngles[i] = 0.0;
@@ -130,6 +130,7 @@ void MQTT::messageHandler(int messageSize) {
 
 }
 
+// Getter function for joint angles that MQTT Client is subscribing to
 double* MQTT::getJointAngles() {
     return jointAngles;
 }

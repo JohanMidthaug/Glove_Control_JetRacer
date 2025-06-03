@@ -77,12 +77,29 @@ public:
      */
     float getRZ() const;
 
+    /**
+     * Setter function for x position
+     * @param pos New x position
+     */
     void setX(float pos);
 
+    /**
+     * Setter function for y position
+     * @param pos New y position
+     */
     void setY(float pos);
 
+    /**
+     * Setter function for z position
+     * @param pos New z Position
+     */
     void setZ(float pos);
 
+    /**
+     * Forward kinematic solver, solving one instance, given the joint angles. Triggering on falling edge
+     * @param q double array of 6 joint angles
+     * @param trigger Bool value for trigger
+     */
     void computeForwardKinematics(const double q[6], bool trigger);
 
 private:

@@ -69,7 +69,6 @@ void setup() {
     mqtt.subscribe(joint4);
     mqtt.subscribe(joint5);
 
-
     // LED initialization
     pinMode(LED_GREEN, OUTPUT);
     pinMode(LED_RED, OUTPUT);
@@ -104,8 +103,6 @@ void loop() {
     mqtt.publish(xValue, gestureControl.getX());
     mqtt.publish(yValue, gestureControl.getY());
     mqtt.publish(zValue, gestureControl.getZ());
-
-    // Orientation value
     mqtt.publish(rzValue, gestureControl.getRZ());
 
     // Gripper

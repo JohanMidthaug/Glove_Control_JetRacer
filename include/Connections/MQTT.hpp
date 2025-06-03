@@ -38,7 +38,7 @@ public:
      * @param broker Broker IP address
      * @param port Broker port
      */
-    MQTT(WiFiClient* wiFiClient, const char* broker, int port, bool trigger, GestureControl &gestureControl);
+    MQTT(WiFiClient* wiFiClient, const char* broker, int port);
 
     /**
      * Function for initializing the class, used in void setup
@@ -71,19 +71,22 @@ public:
      */
     void subscribe(Topic& topic);
 
+    /**
+     * MQTT Client is subscribing on the joint angles, so this is a getter for the joint angles
+     * @return A list of joint angles 6-DoF
+     */
     double* getJointAngles();
 private:
     MqttClient* mqttClient;
-    GestureControl& gestureControl;
     const char* broker_;
     int port_;
     unsigned long lastMillis;
     double lastValue;
-    static MQTT* instance;
 
+
+    static MQTT* instance;
     void messageHandler(int messageSize);
     static void messageRouter(int messageSize);
-    void computeForwardKinematics(const double q[6]);
     double jointAngles[6];   // holds the latest joint0…joint5 values
 
 };
