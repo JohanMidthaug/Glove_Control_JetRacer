@@ -14,8 +14,8 @@ void GestureControl::init() {}
 // Makes it more intuitive
 void GestureControl::virtualJoystick(bool track) {
     if (track) {
-        float dHeading = imu.getGestureHeading() - lastHeading;
-        float dPitch = imu.getGesturePitch() - lastPitch;
+        float dHeading = lastHeading - imu.getGestureHeading();
+        float dPitch =  lastPitch - imu.getGesturePitch();
 
         float currentLength = sqrtf(xPos * xPos + yPos * yPos);
         float currentAngle = atan2f(yPos, xPos) * 180.0f / M_PI;
@@ -50,8 +50,6 @@ void GestureControl::virtualJoystick(bool track) {
 // Orientation
 void GestureControl::orientation(bool track) {
     if (track) {
-        rX = imu.roll();
-        rY = imu.pitch();
         rZ = imu.heading();
     }
 }
@@ -83,14 +81,6 @@ float GestureControl::getZ() const {
     return zPos;
 }
 
-float GestureControl::getRX() const {
-    return rX;
-}
-
-float GestureControl::getRY() const {
-    return rY;
-}
-
 float GestureControl::getRZ() const {
     return rZ;
 }
@@ -108,13 +98,13 @@ void GestureControl::driveAxis(float deltaDeg, float &pos) {
     mag -= deadZone;
 
     // Exponential Response
-    float step = gain * powf(mag, exponent);
+    float step = gain * powf(mag, 1.6);
     float proposedPos = pos + copysignf(step, deltaDeg);
 
     // Applying boundary checks
     if (proposedPos > maxZ) { pos = maxRZ; }
     else if (proposedPos < minZ) { pos = minRZ; }
-    else { pos += proposedPos; }
+    else { pos = proposedPos; }
 }
 
 // drive axis for rotation
@@ -180,3 +170,127 @@ float GestureControl::processAxisDelta(float delta, float currentValue, float ma
     float available = (step > 0) ? (maxValue - currentValue) : (-maxValue - currentValue);
     return constrain(step, -fabsf(available), fabsf(available));
 }
+
+void GestureControl::setX(float pos) {
+    xPos = pos;
+}
+
+void GestureControl::setY(float pos) {
+    yPos = pos;
+}
+
+void GestureControl::setZ(float pos) {
+    zPos = pos;
+}
+
+void GestureControl::computeForwardKinematics(const double q[6], bool trigger) {
+    if (!trigger && prevTrigger) {
+        Serial.println("Calculating");
+
+        // 3) UR5e MDH parameters.  Note carefully the “index shift”:
+        //    a_prev[i] and alpha_prev[i] correspond to the (i+0) link’s parameters,
+        //    while d[i] corresponds to link i+1’s offset in Z.
+        //
+        static const double a_prev[6]     = {  0.0,    0.0,   -0.425,  -0.3922,  0.0,    0.0    };
+        static const double alpha_prev[6] = {  0.0,  -M_PI/2, 0.0,    0.0,     M_PI/2, -M_PI/2 };
+        static const double d_vals[6]     = {  0.1625, 0.0,    0.0,    0.1333,  0.0997,  0.0996 };
+
+        // Helper to form a single MDH 4×4 from (a_prev, alpha_prev, q_i, d_i)
+        auto makeMDH = [&](int i, double T_out[4][4]) {
+            // i goes from 0..5, corresponding to link #i+1 in the chain.
+            double c_alpha = cos(alpha_prev[i]);
+            double s_alpha = sin(alpha_prev[i]);
+            double c_theta = cos(q[i]);
+            double s_theta = sin(q[i]);
+            double a_i      = a_prev[i];
+            double d_i      = d_vals[i];
+
+            // The “Modified DH” row‐by‐row (see standard robotics texts):
+            //   T_i = RotX(alpha_{i-1}) · TransX(a_{i-1}) · RotZ(theta_i) · TransZ(d_i)
+            // Expanding that gives (rows in homogeneous form):
+            //
+            //  [  cosθ_i,  –sinθ_i·cosα_{i-1},   sinθ_i·sinα_{i-1},   a_{i-1}·cosθ_i  ]
+            //  [  sinθ_i,   cosθ_i·cosα_{i-1},  –cosθ_i·sinα_{i-1},   a_{i-1}·sinθ_i  ]
+            //  [   0,            sinα_{i-1},         cosα_{i-1},         d_i       ]
+            //  [   0,              0,                 0,               1          ]
+            //
+            T_out[0][0] =  c_theta;
+            T_out[0][1] = -s_theta * c_alpha;
+            T_out[0][2] =  s_theta * s_alpha;
+            T_out[0][3] =  a_i * c_theta;
+
+            T_out[1][0] =  s_theta;
+            T_out[1][1] =  c_theta * c_alpha;
+            T_out[1][2] = -c_theta * s_alpha;
+            T_out[1][3] =  a_i * s_theta;
+
+            T_out[2][0] =  0.0;
+            T_out[2][1] =  s_alpha;
+            T_out[2][2] =  c_alpha;
+            T_out[2][3] =  d_i;
+
+            T_out[3][0] =  0.0;
+            T_out[3][1] =  0.0;
+            T_out[3][2] =  0.0;
+            T_out[3][3] =  1.0;
+        };
+
+        // 4) Build T₀…T₅
+        double T_i[6][4][4];
+        for (int i = 0; i < 6; i++) {
+            makeMDH(i, T_i[i]);
+        }
+
+        // 5) Multiply them:  Tfinal = T₀ · T₁ · T₂ · T₃ · T₄ · T₅
+        auto matMul4 = [&](const double A[4][4], const double B[4][4], double C[4][4]) {
+            for (int r = 0; r < 4; r++) {
+                for (int c = 0; c < 4; c++) {
+                    double sum = 0.0;
+                    for (int k = 0; k < 4; k++) {
+                        sum += A[r][k] * B[k][c];
+                    }
+                    C[r][c] = sum;
+                }
+            }
+        };
+
+        double Tfinal[4][4], Ttmp[4][4];
+        // Copy Tfinal = T₀
+        for (int r = 0; r < 4; r++) {
+            for (int c = 0; c < 4; c++) {
+                Tfinal[r][c] = T_i[0][r][c];
+            }
+        }
+        // Now do Tfinal = Tfinal * T₁, then (… * T₂), … up to T₅
+        for (int k = 1; k < 6; k++) {
+            matMul4(Tfinal, T_i[k], Ttmp);
+            // Copy Ttmp → Tfinal
+            for (int r = 0; r < 4; r++) {
+                for (int c = 0; c < 4; c++) {
+                    Tfinal[r][c] = Ttmp[r][c];
+                }
+            }
+        }
+
+        // 6) Extract (x, y, z) **in meters**, then multiply by 1000 → millimeters
+        double x_m = Tfinal[0][3];
+        double y_m = Tfinal[1][3];
+        double z_m = Tfinal[2][3];
+
+        xPos = x_m * 1000.0;
+        yPos = y_m * 1000.0;
+        zPos = z_m * 1000.0;
+
+        Serial.print(  "✅ FK result (mm): X = ");
+        Serial.print(xPos,  1);  // e.g. “250.0”
+        Serial.print("  Y = ");
+        Serial.print(yPos,  1);
+        Serial.print("  Z = ");
+        Serial.println(zPos, 1);
+    }
+
+    // 7) Always update prevTrigger for the next call
+    prevTrigger = trigger;
+}
+
+

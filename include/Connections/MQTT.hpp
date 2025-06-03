@@ -9,6 +9,7 @@
 #include <ArduinoMqttClient.h>
 #include <WiFi.h>
 #include "Connections/Topic.hpp"
+#include "Control/GestureControl.hpp"
 
 /*!
 @startuml
@@ -37,7 +38,7 @@ public:
      * @param broker Broker IP address
      * @param port Broker port
      */
-    MQTT(WiFiClient* wiFiClient, const char* broker, int port);
+    MQTT(WiFiClient* wiFiClient, const char* broker, int port, bool trigger, GestureControl &gestureControl);
 
     /**
      * Function for initializing the class, used in void setup
@@ -49,14 +50,14 @@ public:
      * @param topic Topic name
      * @param value Value to send
      */
-    void send(Topic& topic, double value);
+    void publish(Topic& topic, double value);
 
     /**
      * Function for sending strings to broker, used for gripper boolean value
      * @param topic The topic name
      * @param string String value to send
      */
-    void sendString(Topic& topic, String string);
+    void publishString(Topic& topic, String string);
 
     /**
      * Getter function for pointer to mqttclient
@@ -64,12 +65,27 @@ public:
      */
     MqttClient* getMqttClient();
 
+    /**
+     * Function for subscribing to a topic
+     * @param topic
+     */
+    void subscribe(Topic& topic);
+
+    double* getJointAngles();
 private:
     MqttClient* mqttClient;
+    GestureControl& gestureControl;
     const char* broker_;
     int port_;
     unsigned long lastMillis;
     double lastValue;
+    static MQTT* instance;
+
+    void messageHandler(int messageSize);
+    static void messageRouter(int messageSize);
+    void computeForwardKinematics(const double q[6]);
+    double jointAngles[6];   // holds the latest joint0…joint5 values
+
 };
 
 #endif //MOM_GLOVE_MQTT_HPP

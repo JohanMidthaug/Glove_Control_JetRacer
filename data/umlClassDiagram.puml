@@ -13,8 +13,9 @@ class GloveController {
 class GestureControl {
     +GestureControl(imu: IMU&)
   +init()
-  +virtualJoystick(flex: FlexSensor&)
-  +orientation(flex: FlexSensor&)
+  +virtualJoystick(bool)
+  +orientation(bool)
+  +toggleGripper(bool: sensor, bool:sensor): String
   +getX(): float
   +getY(): float
   +getZ(): float

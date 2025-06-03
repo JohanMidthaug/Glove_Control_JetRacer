@@ -6,10 +6,12 @@ IMU::IMU() : lsm() {
 }
 
 void IMU::init() {
+    Serial.println("Initializing sensor ...");
     if (!lsm.begin()) {
         Serial.println("LSM9DS1 not detected ... Check wiring or I2C address");
         while (1);
     }
+    Serial.println(" finished!");
 
     lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_2G);
     lsm.setupMag(lsm.LSM9DS1_MAGGAIN_4GAUSS);

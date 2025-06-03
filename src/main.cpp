@@ -13,21 +13,30 @@ WiFiWPA2 wifi;
 IMU bno_IMU;
 
 // Creating MQTT class connecting to NTNU Broker
-MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
-//MQTT home(wifi.getWiFiClient(), "10.24.8.108", 1883);
+//MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
+String updateBoolValue(bool updating_);
+
 
 // Defining MQTT Topics
-Topic rxValue("mom/rxValue", 100);
-Topic ryValue("mom/ryValue", 100);
-Topic rzValue("mom/rzValue", 100);
+Topic rzValue("mom/rotValue", 100);
 Topic xValue("mom/xValue", 100);
 Topic yValue("mom/yValue", 100);
 Topic zValue("mom/zValue", 100);
 Topic gripper("mom/gripper", 100);
+Topic invalidPose("mom/invalidPose", 100);
+Topic updating("mom/updating", 100);
+
+// joints
+Topic joint0("mom/joint0", 100);
+Topic joint1("mom/joint1", 100);
+Topic joint2("mom/joint2", 100);
+Topic joint3("mom/joint3", 100);
+Topic joint4("mom/joint4", 100);
+Topic joint5("mom/joint5", 100);
 
 // Defining flex sensors
-FlexSensor toggleHeight(4, 2900);
-FlexSensor toggleTrack(7, 3100);
+FlexSensor toggleHeight(4, 3150);
+FlexSensor toggleTrack(7, 3150);
 
 // Gesture Control
 GestureControl gestureControl(bno_IMU);
@@ -37,27 +46,34 @@ UserButton toggleButton(10);
 
 // Value for sending gripper
 String toggleGripper = "FALSE";
+String updatingValue = "FALSE";
 
+MQTT mqtt(wifi.getWiFiClient(), "10.24.8.108", 1883, (toggleHeight.read() or toggleTrack.read()), gestureControl);
 void setup() {
     Serial.begin(115200);
-
-    // Button init
-    toggleButton.init();
-    toggleHeight.init();
 
     // Initializing classes
     wifi.init();
     mqtt.init();
-    Serial.print("Initializing sensor ...");
     bno_IMU.init();
-    Serial.println(" finished!");
-
-    // Init flex sensors
+    toggleButton.init();
+    toggleHeight.init();
     toggleTrack.init();
+
+    // MQTT Subscribing to topic
+    mqtt.subscribe(invalidPose);
+    mqtt.subscribe(joint0);
+    mqtt.subscribe(joint1);
+    mqtt.subscribe(joint2);
+    mqtt.subscribe(joint3);
+    mqtt.subscribe(joint4);
+    mqtt.subscribe(joint5);
+
 
     // LED initialization
     pinMode(LED_GREEN, OUTPUT);
     pinMode(LED_RED, OUTPUT);
+    pinMode(LED_BLUE, OUTPUT);
 }
 
 void loop() {
@@ -72,6 +88,8 @@ void loop() {
         gestureControl.heightControl(toggleHeight.read() && !toggleTrack.read());
         toggleGripper = gestureControl.toggleGripper(toggleTrack.read(), toggleHeight.read());
 
+        //gestureControl.computeForwardKinematics(mqtt.getJointAngles(), toggleTrack.read() or toggleHeight.read());
+
         // Turning on green light
         digitalWrite(LED_RED, HIGH);
         digitalWrite(LED_GREEN, LOW);
@@ -79,17 +97,17 @@ void loop() {
         // Turning on red light
         digitalWrite(LED_RED, LOW);
         digitalWrite(LED_GREEN, HIGH);
+
     }
 
-    // Position values
-    mqtt.send(xValue, gestureControl.getX());
-    mqtt.send(yValue, gestureControl.getY());
-    mqtt.send(zValue, gestureControl.getZ());
+    // Publishing position values
+    mqtt.publish(xValue, gestureControl.getX());
+    mqtt.publish(yValue, gestureControl.getY());
+    mqtt.publish(zValue, gestureControl.getZ());
 
     // Orientation value
-    mqtt.send(rzValue, gestureControl.getRZ());
+    mqtt.publish(rzValue, gestureControl.getRZ());
 
     // Gripper
-    mqtt.sendString(gripper, toggleGripper);
-
+    mqtt.publishString(gripper, toggleGripper);
 }

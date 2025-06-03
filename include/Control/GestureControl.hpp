@@ -70,23 +70,20 @@ public:
      */
     float getZ() const;
 
-    /**
-     * Getter function
-     * @return Rotation along x axis
-     */
-    float getRX() const;
-
-    /**
-     * Getter function
-     * @return Rotation along y axis
-     */
-    float getRY() const;
 
     /**
      * Getter function
      * @return Rotation along z axis
      */
     float getRZ() const;
+
+    void setX(float pos);
+
+    void setY(float pos);
+
+    void setZ(float pos);
+
+    void computeForwardKinematics(const double q[6], bool trigger);
 
 private:
     IMU& imu;
@@ -103,9 +100,9 @@ private:
     unsigned long lastUpdate = 0;
 
     // Updated variables (help from GPT)
-    static constexpr float deadZone = 10.0f;
+    static constexpr float deadZone = 8.0f;
     static constexpr float gain = 0.001f; // How far one 'unit' moves the object, think this will be 1
-    static constexpr float exponent = 2.0f;
+    static constexpr float exponent = 1.2f;
 
     // Function for movement
     void driveAxis(float deltaDeg, float& pos);
@@ -117,7 +114,7 @@ private:
     float baseGain = 0.3f;    // Start low, increase as needed
     float maxLength = 850.0f; // Your robot's reach
     float lastAngle; // Add to your class
-
+    bool prevTrigger;      // the state just before trigger was updated
 };
 
 
