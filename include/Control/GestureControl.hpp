@@ -105,10 +105,15 @@ public:
 
     void updateOnStop(bool trigger, MQTT &mqtt);
 
+    float getThrottle() const;
+    float getSteering() const;
+
 private:
     IMU& imu;
 
     float maxRZ = PI, minRZ = -PI;
+
+    float throttle = 0, steering = 0;
 
     float xPos = 250, yPos = -400, zPos = 150;
     float rZ = 1.83;
@@ -129,6 +134,7 @@ private:
     void driveAxisOrientation(float deltaDeg, float &pos);
     float angleDiff(float a, float b);
     float processAxisDelta(float delta, float currentValue, float maxValue);
+    float map(float x, float in_min, float in_max, float out_min, float out_max);
 
     // In your constructor:
     float baseGain = 0.3f;    // Start low, increase as needed

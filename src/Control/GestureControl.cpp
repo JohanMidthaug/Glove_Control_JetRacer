@@ -17,30 +17,10 @@ void GestureControl::virtualJoystick(bool track) {
         float dHeading = lastHeading - imu.getGestureHeading();
         float dPitch =  lastPitch - imu.getGesturePitch();
 
-        float currentLength = sqrtf(xPos * xPos + yPos * yPos);
-        float currentAngle = atan2f(yPos, xPos) * 180.0f / M_PI;
+        throttle = map(dHeading, -40, 40, -1, 1);
+        steering = map(dPitch, -40, 40, -1, 1);
 
-        // Stabilize angle if near center
-        if (currentLength < 0.05f) {
-            currentAngle = lastAngle;
-        } else {
-            lastAngle = currentAngle;
-        }
-
-        // Length update (pitch)
-        currentLength += processAxisDelta(dHeading, currentLength, maxLength);
-        currentLength = constrain(currentLength, 0.0f, maxLength); // Clamp length
-
-        // Angle update (roll) — only if meaningful
-        if (currentLength > 0.05f) {
-            float angleStep = processAxisDelta(dPitch, currentAngle, 180.0f);
-            angleStep *= (currentLength / maxLength); // Reduce angle influence near center
-            currentAngle += angleStep;
-        }
-
-        float radAngle = currentAngle * M_PI / 180.0f;
-        xPos = currentLength * cosf(radAngle);
-        yPos = currentLength * sinf(radAngle);
+        Serial.printf("Delte Heading: %f \n Delta Pitch: %f", throttle, steering);
     } else {
         lastHeading = imu.getGestureHeading();
         lastPitch = imu.getGesturePitch();
@@ -293,24 +273,30 @@ void GestureControl::computeForwardKinematics(const double q[6], bool trigger) {
     prevTrigger = trigger;
 }
 
-// Update
-void GestureControl::updateOnStop(bool trigger, MQTT &mqtt) {
-
-    if (!trigger) {
-        Serial.print(prevMillis);
-        xPos = mqtt.getXpos();
-        yPos = mqtt.getYpos();
-        zPos = mqtt.getZpos();
-        rZ = mqtt.getRotation();
-        Serial.print("Updated position values to x: ");
-        Serial.print(xPos);
-        Serial.print(" y: ");
-        Serial.print(yPos);
-        Serial.print(" z: ");
-        Serial.print(zPos);
-        Serial.print(" rotation: ");
-        Serial.println(rZ);
-
+float GestureControl::map(float x, float in_min, float in_max, float out_min, float out_max) {
+    // Guard against division by zero
+    float in_range = in_max - in_min;
+    if (in_range == 0.0f) {
+        // If input range is zero, return the lower bound of the output range
+        return out_min;
     }
+
+    // Normalize x to [0, 1] within the input range, then scale to output range
+    float t = (x - in_min) / in_range;
+    float out = out_min + t * (out_max - out_min);
+
+    // Clamp to the output range (handles reversed ranges as well)
+    float minO = fminf(out_min, out_max);
+    float maxO = fmaxf(out_min, out_max);
+    if (out < minO) return minO;
+    if (out > maxO) return maxO;
+    return out;
 }
 
+float GestureControl::getThrottle() const {
+    return throttle;
+}
+
+float GestureControl::getSteering() const {
+    return steering;
+}

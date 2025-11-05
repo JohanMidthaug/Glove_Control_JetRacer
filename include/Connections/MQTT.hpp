@@ -53,6 +53,14 @@ public:
     void publish(Topic& topic, double value);
 
     /**
+     * Function for sending JSON messages with two values, specifically designed for JetRacer
+     * @param topic
+     * @param throttle
+     * @param steering
+     */
+    void publishJSON(Topic& topic, double throttle, double steering);
+
+    /**
      * Function for sending strings to broker, used for gripper boolean value
      * @param topic The topic name
      * @param string String value to send

@@ -20,7 +20,7 @@ void MQTT::init() {
 
     // Connecting to NTNU broker
     mqttClient->setId("MyESP32Client");
-    //mqttClient->setUsernamePassword("ais2104", "ais2104");
+    mqttClient->setUsernamePassword("ais2104", "ais2104");
     if (!mqttClient->connect(broker_, port_)) {
         Serial.print("MQTT error: ");
         Serial.println(mqttClient->connectError());
@@ -48,6 +48,28 @@ void MQTT::publish(Topic& topic, double value) {
         // Sending topic and value
         mqttClient->beginMessage(topic.getTopic());
         mqttClient->print(value);
+        mqttClient->endMessage();
+    }
+}
+
+void MQTT::publishJSON(Topic& topic, double throttle, double steering) {
+
+    String string = "{\"throttle\":" + String(throttle) + ", \"steering\":" + String(steering) + "}";
+
+    if ((millis() - topic.getLastMillis() >= topic.getInterval()) && topic.updateString(string)) {
+        topic.setLastMillis(millis());
+        // Debug messages:
+        /*
+        Serial.print("Sending message to: ");
+        Serial.println(topic.getTopic());
+        Serial.println(value);
+         */
+        topic.updateLastString(string);
+
+        //Serial.println("Sent String: " + string);
+        // Sending topic and value
+        mqttClient->beginMessage(topic.getTopic());
+        mqttClient->print(string);
         mqttClient->endMessage();
     }
 }
