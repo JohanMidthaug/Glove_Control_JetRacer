@@ -18,12 +18,15 @@ void GestureControl::virtualJoystick(bool track) {
         float dPitch =  lastPitch - imu.getGesturePitch();
 
         throttle = map(dHeading, -40, 40, -1, 1);
-        steering = map(dPitch, -40, 40, -1, 1);
+        steering = map(dPitch, -80, 80, -1, 1);
 
-        Serial.printf("Delte Heading: %f \n Delta Pitch: %f", throttle, steering);
+        //Serial.printf("Delte Heading: %f \n Delta Pitch: %f", throttle, steering);
     } else {
+        throttle = 0;
+        steering = 0;
         lastHeading = imu.getGestureHeading();
         lastPitch = imu.getGesturePitch();
+        //Serial.printf("heading: %f, Pitch: %f\n", imu.getGestureHeading(), imu.getGesturePitch());
     }
 }
 

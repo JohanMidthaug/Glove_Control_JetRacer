@@ -54,7 +54,7 @@ void MQTT::publish(Topic& topic, double value) {
 
 void MQTT::publishJSON(Topic& topic, double throttle, double steering) {
 
-    String string = "{\"throttle\":" + String(throttle) + ", \"steering\":" + String(steering) + "}";
+    String string = "{\"linear_x\":" + String(throttle) + ", \"angular_z\":" + String(steering) + "}";
 
     if ((millis() - topic.getLastMillis() >= topic.getInterval()) && topic.updateString(string)) {
         topic.setLastMillis(millis());

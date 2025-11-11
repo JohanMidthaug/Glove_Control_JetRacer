@@ -32,7 +32,8 @@ void IMU::run() {
 
     // --- Heading from magnetometer ---
     float mx = m.magnetic.x;
-    float my = m.magnetic.y;
+    float my = - m.magnetic.y;
+    float mz = m.magnetic.z;
 
     absHeading = atan2(my, mx) * 180.0 / M_PI;
     if (absHeading < 0) absHeading += 360.0;
@@ -41,15 +42,23 @@ void IMU::run() {
     unsigned long now = millis();
     float dt = (now - lastUpdate) / 1000.0f;
     lastUpdate = now;
-
+    /*
     // --- Gyroscope-based delta integration (bias-corrected) ---
     float dRollDeg = (g.gyro.x - gyroBiasX) * dt * 180.0 / M_PI;
     float dPitchDeg = (g.gyro.y - gyroBiasY) * dt * 180.0 / M_PI;
     float dHeadingDeg = (g.gyro.z - gyroBiasZ) * dt * 180.0 / M_PI;
 
+    //Serial.printf("Gyro: %f, %f, %f \n", dRollDeg, dPitchDeg, dHeadingDeg);
+    Serial.printf("Heading Magnetic: %f, %f, %f \n", mx, my, m.magnetic.z);
+
     gestureRoll    += dRollDeg;
     gesturePitch   += dPitchDeg;
     gestureHeading += dHeadingDeg;
+    */
+    gestureRoll = mx;
+    gesturePitch = mz;
+    gestureHeading = my;
+
 }
 
 float IMU::heading() {
