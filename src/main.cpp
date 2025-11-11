@@ -5,6 +5,7 @@
 #include <Connections/FlexSensor.hpp>
 #include "Control/GestureControl.hpp"
 #include "Connections/UserButton.hpp"
+#include <iostream>
 
 // Creating WI-FI class
 WiFiWPA2 wifi;
@@ -13,12 +14,15 @@ WiFiWPA2 wifi;
 IMU bno_IMU;
 
 // Creating MQTT class connecting to NTNU Broker
-//MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
+MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
 String updateBoolValue(bool updating_);
 
 
 // Defining MQTT Topics
-Topic rzValue("mom/rotValue", 100);
+Topic xLinear("cmd_vel", 100);
+Topic cmd_vel("cmd_vel", 100);
+Topic zAngular("cmd_vel", 100);
+/*Topic rzValue("mom/rotValue", 100);
 Topic xValue("mom/xValue", 100);
 Topic yValue("mom/yValue", 100);
 Topic zValue("mom/zValue", 100);
@@ -31,6 +35,7 @@ Topic xPos("mom/xActualValue", 100);
 Topic yPos("mom/yActualValue", 100);
 Topic zPos("mom/zActualValue", 100);
 Topic joint5("mom/joint5", 100);
+*/
 
 // Defining flex sensors
 FlexSensor toggleHeight(4, 3150);
@@ -46,7 +51,7 @@ UserButton toggleButton(10);
 String toggleGripper = "FALSE";
 String updatingValue = "FALSE";
 
-MQTT mqtt(wifi.getWiFiClient(), "10.24.8.108", 1883);
+//MQTT mqtt(wifi.getWiFiClient(), "10.24.8.108", 1883);
 void setup() {
     Serial.begin(115200);
 
@@ -58,13 +63,16 @@ void setup() {
     toggleHeight.init();
     toggleTrack.init();
 
-    // MQTT Subscribing to topic
+
+    //mqtt.subscribe(xLinear);
+    //mqtt.subscribe(zAngular);
+    /* MQTT Subscribing to topic
     mqtt.subscribe(invalidPose);
     mqtt.subscribe(xPos);
     mqtt.subscribe(yPos);
     mqtt.subscribe(zPos);
     mqtt.subscribe(joint5);
-
+    */
     // LED initialization
     pinMode(LED_GREEN, OUTPUT);
     pinMode(LED_RED, OUTPUT);
@@ -75,6 +83,8 @@ void loop() {
     // Call poll() regularly to allow the library to send MQTT keep alive which
     // avoids being disconnected by the broker
     mqtt.getMqttClient()->poll();
+    Serial.println(cmd_vel.getTopic());
+
 
     if (toggleButton.toggle()) {
         // Running imu and gesture control, only if button is toggled
@@ -98,7 +108,10 @@ void loop() {
 
     }
 
-    // Publishing position values
+    mqtt.publishJSON(cmd_vel, gestureControl.getX(), gestureControl.getY());
+    //Serial.println(gestureControl.getX());
+
+    /* Publishing position values
     mqtt.publish(xValue, gestureControl.getX());
     mqtt.publish(yValue, gestureControl.getY());
     mqtt.publish(zValue, gestureControl.getZ());
@@ -107,6 +120,7 @@ void loop() {
 
     // Gripper
     mqtt.publishString(gripper, toggleGripper);
+    */
 }
 
 String updateBoolValue(bool updating_) {

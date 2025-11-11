@@ -20,7 +20,7 @@ void MQTT::init() {
 
     // Connecting to NTNU broker
     mqttClient->setId("MyESP32Client");
-    //mqttClient->setUsernamePassword("ais2104", "ais2104");
+    mqttClient->setUsernamePassword("ais2104", "ais2104");
     if (!mqttClient->connect(broker_, port_)) {
         Serial.print("MQTT error: ");
         Serial.println(mqttClient->connectError());
@@ -56,11 +56,10 @@ void MQTT::publishString(Topic &topic, String string) {
     if ((millis() - topic.getLastMillis() >= topic.getInterval()) && topic.updateString(string)) {
         topic.setLastMillis(millis());
         // Debug messages:
-        /*
+
         Serial.print("Sending message to: ");
         Serial.println(topic.getTopic());
         Serial.println(string);
-         */
         topic.updateLastString(string);
 
         // Sending topic and value
@@ -69,6 +68,33 @@ void MQTT::publishString(Topic &topic, String string) {
         mqttClient->endMessage();
     }
 }
+
+void MQTT::publishJSON(Topic &topic, float valueX, float valueZ) {
+    if ((millis() - topic.getLastMillis() >= topic.getInterval())) {
+        String json = String("{\"linear_x\":") + valueX + ",\"angular_z\":" + valueZ + "}";
+
+
+
+        if (topic.updateString(json)) {
+            topic.setLastMillis(millis());
+
+            Serial.print("Sending JSON to: ");
+            Serial.println(topic.getTopic());
+            Serial.println(json);
+            topic.updateLastString(json);
+
+            mqttClient->beginMessage(topic.getTopic());  // publishes to cmd_vel
+            mqttClient->print(json);
+            mqttClient->endMessage();
+        }
+    }
+}
+
+
+
+
+
+
 
 // Getter function for client
 MqttClient* MQTT::getMqttClient() {

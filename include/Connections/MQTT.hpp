@@ -58,6 +58,7 @@ public:
      * @param string String value to send
      */
     void publishString(Topic& topic, String string);
+    void publishJSON(Topic& topic,  float valueX, float valueZ);
 
     /**
      * Getter function for pointer to mqttclient
