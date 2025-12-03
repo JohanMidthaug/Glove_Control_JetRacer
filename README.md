@@ -13,7 +13,7 @@ virtual joystick and orientation, and publishes it via MQTT to a broker.
 
 ## Overview
 
-This project is for controlling JetRacer ROS AI via MQTT, I have provided a detailed description on how to initialize this project!
+This project is for controlling JetRacer ROS AI via MQTT, and what follows next is a detailed description on how to initialize this project.
 
 **Note:**  
 This project depends on a separate project which has to run on the physical JetRacer.
@@ -29,15 +29,6 @@ That project handles:
 ### Prerequisites
 - **PlatformIO:** Install PlatformIO IDE or the PlatformIO Core.
     - For the CLion, follow the instructions [here](https://docs.platformio.org/en/latest/core/installation.html).
-
-### Clone the Repository
-
-1. Open your terminal.
-2. Clone the repository by running:
-
-```bash
-git clone git@github.com:HermanGran/Master-of-Machines.git
-```
 
 ### PlatformIO setup
 To compile and build the project, run the following:
