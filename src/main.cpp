@@ -16,7 +16,7 @@ IMU bno_IMU;
 MQTT mqtt(wifi.getWiFiClient(), "129.241.30.177", 1883);
 
 // Defining MQTT Topics
-Topic JetracerControl("cmd_vel", 50);
+Topic JetracerControl("jetracer/manual/cmd_vel", 50);
 
 // Defining flex sensors
 FlexSensor toggleTrack(7, 3150);

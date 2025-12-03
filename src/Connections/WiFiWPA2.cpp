@@ -16,6 +16,8 @@ void WiFiWPA2::init() {
     // Setting to Station mode
     WiFi.mode(WIFI_STA);
 
+
+
     // Identity, name, and password for Wi-Fi school security
     esp_wifi_sta_wpa2_ent_set_identity((uint8_t*)EAP_IDENTITY, strlen(EAP_IDENTITY));
     esp_wifi_sta_wpa2_ent_set_username((uint8_t*)EAP_USERNAME, strlen(EAP_USERNAME));
@@ -29,7 +31,8 @@ void WiFiWPA2::init() {
     }
 
     // Connect to WiFi SSID
-    WiFi.begin(EAP_SSID);
+    //WiFi.begin(EAP_SSID);
+    WiFi.begin(EAP_SSID, EAP_PASSWORD);
 
     Serial.printf("Connecting to WPA2 Enterprise-network %s ...\n", EAP_SSID);
     while (WiFi.status() != WL_CONNECTED) {
